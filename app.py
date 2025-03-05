@@ -3,16 +3,26 @@ from check_password import check_password, logout
 
 def main():
     st.title("Tarea Módulo 8: Iniciar Sesión")
+    # Leemos el parámetro 'page' de la URL; si no existe, asumimos "login"
+    params = st.experimental_get_query_params()
+    page = params.get("page", ["login"])[0]
 
-    if check_password():
-        st.write("Bienvenido a la aplicación")
-        
-        # Aquí va el contenido principal de tu aplicación
-        st.write("Contenido protegido de la aplicación")
+    if page == "login":
 
-        # Botón de cierre de sesión
-        if st.button("Cerrar Sesión"):
-            logout()
+        if check_password():
+            # Una vez que se loguea, actualizamos el parámetro a "dashboard"
+            st.experimental_set_query_params(page="dashboard")
+            st.experimental_rerun()
+    elif page == "dashboard":
+        if st.session_state.get('logged_in', False):        
+            st.success("Accediste sin problema")
+            st.write("Bienvenido a la aplicación protegida.")
+            if st.button("Cerrar Sesión"):
+                logout()
+        else:
+            # Si no está logueado, volvemos al login
+            st.experimental_set_query_params(page="login")
+            st.experimental_rerun()
 
 if __name__ == "__main__":
     main()

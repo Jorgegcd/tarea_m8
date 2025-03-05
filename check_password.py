@@ -2,7 +2,6 @@ import streamlit as st
 import time
 
 def check_password():
-    st.title("Iniciar sesión")
     if "login_time" not in st.session_state:
         st.session_state.login_time = None
 
@@ -22,8 +21,11 @@ def check_password():
             # Validación básica: cambia estos valores o conecta con tu base de datos
             if username == "admin" and password == "admin":
                 st.session_state["logged_in"] = True
+                st.session_state.password_correct = True
                 st.session_state.login_time = time.time()
-                st.rerun()
+                # Cambiamos el parámetro para "redireccionar" a dashboard
+                st.experimental_set_query_params(page="dashboard")
+                st.experimental_rerun()
             else:
                 st.error("Usuario o contraseña incorrectos")
         return False

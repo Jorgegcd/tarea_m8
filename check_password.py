@@ -1,6 +1,6 @@
 import streamlit as st
 
-def login_form():
+def check_password():
     st.title("Iniciar sesión")
     username = st.text_input("Usuario")
     password = st.text_input("Contraseña", type="password")

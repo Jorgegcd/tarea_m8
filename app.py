@@ -1,5 +1,5 @@
 import streamlit as st
-from auth import login_form, logout_button
+from auth import check_password, logout_button
 
 # Inicializamos el estado de sesión si aún no está definido
 if "logged_in" not in st.session_state:
@@ -11,4 +11,4 @@ if st.session_state["logged_in"]:
     st.write("Este es el contenido protegido de tu app.")
     logout_button()
 else:
-    login_form()
+    check_password()

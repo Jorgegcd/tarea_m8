@@ -1,26 +1,12 @@
 import streamlit as st
 
-def check_password():
+def login_form():
     st.title("Iniciar sesión")
-    def password_entered():
-        if st.session_state['password'] == 'admin':
-            st.session_state['password_correct'] = True
-            del st.session_state("password")
-        else:
-            st.session_state['password_correct'] = False
-        
-    if 'password_correct' not in st.session_state:
-        username = st.text_input("Usuario")
-        password = st.text_input("Contraseña", type="password", on_change = password_entered, key = "password")
-        return False
-    elif not st.session_state['password_correct']:
-        password
-        st.error("Contraseña incorrecta")
-        return False
-    
-    if st.button("Login"):
+    username = st.text_input("Usuario")
+    password = st.text_input("Contraseña", type="password")
+    if st.button("Entrar"):
         # Validación básica: cambia estos valores o conecta con tu base de datos
-        if username == "admin" and password == "admin":
+        if username == "admin" and password == "1234":
             st.session_state["logged_in"] = True
             st.success("¡Inicio de sesión exitoso!")
         else:

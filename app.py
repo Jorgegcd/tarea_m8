@@ -1,14 +1,18 @@
 import streamlit as st
-from check_password import check_password, logout_button
+from check_password import check_password, logout
 
-# Inicializamos el estado de sesión si aún no está definido
-if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
+def main():
+    st.title("Tarea Módulo 8: Iniciar Sesión")
 
-if st.session_state["logged_in"]:
-    st.write("¡Bienvenido a la aplicación!")
-    # Aquí pones el contenido que quieres que vean los usuarios autenticados
-    st.write("Este es el contenido protegido de tu app.")
-    logout_button()
-else:
-    check_password()
+    if check_password():
+        st.write("Bienvenido a la aplicación")
+        
+        # Aquí va el contenido principal de tu aplicación
+        st.write("Contenido protegido de la aplicación")
+
+        # Botón de cierre de sesión
+        if st.button("Cerrar Sesión"):
+            logout()
+
+if __name__ == "__main__":
+    main()

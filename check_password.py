@@ -1,18 +1,36 @@
 import streamlit as st
+import time
 
 def check_password():
     st.title("Iniciar sesión")
-    username = st.text_input("Usuario")
-    password = st.text_input("Contraseña", type="password")
-    if st.button("Entrar"):
-        # Validación básica: cambia estos valores o conecta con tu base de datos
-        if username == "admin" and password == "admin":
-            st.session_state["logged_in"] = True
-            st.success("¡Inicio de sesión exitoso!")
-        else:
-            st.error("Usuario o contraseña incorrectos")
+    if "login_time" not in st.session_state:
+        st.session_state.login_time = None
 
-def logout_button():
-    if st.button("Cerrar sesión"):
-        st.session_state["logged_in"] = False
-        st.experimental_rerun()
+    if "password_correct" not in st.session_state:
+        st.session_state.password_correct = False
+
+    if st.session_state.password_correct:
+        # Verificar si han pasado más de 30 minutos desde el último login
+        if st.session_state.login_time and time.time() - st.session_state.login_time > 1800:
+            st.session_state.password_correct = False
+            st.session_state.login_time = None
+
+    if not st.session_state.password_correct:
+        username = st.text_input("Usuario")
+        password = st.text_input("Contraseña", type="password")
+        if st.button("Entrar"):
+            # Validación básica: cambia estos valores o conecta con tu base de datos
+            if username == "admin" and password == "admin":
+                st.session_state["logged_in"] = True
+                st.session_state.login_time = time.time()
+                st.rerun()
+            else:
+                st.error("Usuario o contraseña incorrectos")
+        return False
+    return True
+
+def logout():
+    """Cierra la sesión del usuario."""
+    st.session_state.password_correct = False
+    st.session_state.login_time = None
+    st.rerun()

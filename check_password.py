@@ -25,7 +25,7 @@ def check_password():
                 st.session_state.login_time = time.time()
                 # Cambiamos el parámetro para "redireccionar" a dashboard
                 st.query_params = {"page": "dashboard"}
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Usuario o contraseña incorrectos")
         return False

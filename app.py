@@ -23,6 +23,11 @@ def main():
             # Si no está logueado, volvemos al login
             st.query_params = {"page": "login"}
             st.rerun()
-
+    btnSalir=st.button("Salir")
+    if btnSalir:
+        st.session_state.clear()
+        # Luego de borrar el Session State reiniciamos la app para mostrar la opción de usuario y clave
+        st.rerun()
+        
 if __name__ == "__main__":
     main()

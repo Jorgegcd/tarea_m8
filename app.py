@@ -1,5 +1,5 @@
 import streamlit as st
-from auth import check_password, logout_button
+from check_password import check_password, logout_button
 
 # Inicializamos el estado de sesión si aún no está definido
 if "logged_in" not in st.session_state:

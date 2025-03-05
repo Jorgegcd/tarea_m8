@@ -8,10 +8,9 @@ def main():
     page = params.get("page", ["login"])[0]
 
     if page == "login":
-
+        st.title("Tarea Módulo 8: Iniciar Sesión")
         if check_password():
             # Una vez que se loguea, actualizamos el parámetro a "dashboard"
-            st.title("Tarea Módulo 8: Iniciar Sesión")
             st.query_params = {'page':"dashboard"}
             st.rerun()
 

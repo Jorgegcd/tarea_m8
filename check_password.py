@@ -35,4 +35,4 @@ def logout():
     """Cierra la sesión del usuario."""
     st.session_state.password_correct = False
     st.session_state.login_time = None
-    st.experimental_rerun()
+    st.rerun()

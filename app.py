@@ -12,7 +12,7 @@ def main():
         if check_password():
             # Una vez que se loguea, actualizamos el parámetro a "dashboard"
             st.query_params = {'page':"dashboard"}
-            st.experimental_rerun()
+            st.rerun()
     elif page == "dashboard":
         if st.session_state.get('logged_in', False):        
             st.success("Accediste sin problema")
@@ -22,7 +22,7 @@ def main():
         else:
             # Si no está logueado, volvemos al login
             st.query_params = {"page": "login"}
-            st.experimental_rerun()
+            st.rerun()
 
 if __name__ == "__main__":
     main()

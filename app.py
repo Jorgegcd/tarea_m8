@@ -4,7 +4,7 @@ from check_password import check_password, logout
 def main():
     st.title("Tarea Módulo 8: Iniciar Sesión")
     # Leemos el parámetro 'page' de la URL; si no existe, asumimos "login"
-    params = st.query_params()
+    params = st.query_params
     page = params.get("page", ["login"])[0]
 
     if page == "login":

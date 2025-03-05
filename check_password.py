@@ -6,7 +6,7 @@ def check_password():
     password = st.text_input("Contraseña", type="password")
     if st.button("Entrar"):
         # Validación básica: cambia estos valores o conecta con tu base de datos
-        if username == "admin" and password == "1234":
+        if username == "admin" and password == "admin":
             st.session_state["logged_in"] = True
             st.success("¡Inicio de sesión exitoso!")
         else:

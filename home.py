@@ -1,5 +1,5 @@
 import streamlit as st
-from common.check_password import check_password, logout
+from common.login import check_password, logout
 
 def main():
     # Leemos el parámetro 'page' de la URL; si no existe, asumimos "login"
@@ -8,7 +8,7 @@ def main():
 
     if page == "login":
         st.title("Tarea Módulo 8: Iniciar Sesión")
-        if check_password():
+        if login():
             # Una vez que se loguea, actualizamos el parámetro a "dashboard"
             st.set_query_params(page="dashboard")
             st.rerun()

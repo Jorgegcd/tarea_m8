@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import os
 
 def generarMenu(user):
     """Genera el menú dependiendo del usuario

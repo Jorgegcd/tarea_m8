@@ -3,19 +3,6 @@ import pandas as pd
 import os
 import common.menu as menu
 
-def check_password(user, password):
-    if "login_time" not in st.session_state:
-        st.session_state.login_time = None
-
-    if "password_correct" not in st.session_state:
-        st.session_state.password_correct = False
-
-    if st.session_state.password_correct:
-        # Verificar si han pasado más de 30 minutos desde el último login
-        if st.session_state.login_time and time.time() - st.session_state.login_time > 1800:
-            st.session_state.password_correct = False
-            st.session_state.login_time = None
-
 def generarLogin():
     """Genera la ventana de login o muestra el menú si el login es valido
     """    

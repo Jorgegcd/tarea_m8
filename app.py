@@ -1,5 +1,5 @@
 import streamlit as st
-from check_password import check_password, logout
+from common.check_password import check_password, logout
 
 def main():
     # Leemos el parámetro 'page' de la URL; si no existe, asumimos "login"

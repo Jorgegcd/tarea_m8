@@ -14,8 +14,8 @@ def generarMenu(user):
         # Mostramos los enlaces de páginas
         st.page_link("home.py", label="Inicio", icon=":material/home:")
         st.subheader("Páginas")
-        st.page_link("pages/pagina1.py", label="Estadísticas equipos", icon=":material/sell:")
-        st.page_link("pages/pagina2.py", label="Estadisticas jugadores", icon=":material/shopping_cart:") 
+        st.page_link("pages/pagina1.py", label="Estadísticas Equipos", icon=":material/sell:")
+        st.page_link("pages/pagina2.py", label="Estadísticas ugadores", icon=":material/shopping_cart:") 
         # Botón para cerrar la sesión
         btnSalir=st.button("Salir")
         if btnSalir:

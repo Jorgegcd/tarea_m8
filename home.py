@@ -17,5 +17,5 @@ if 'usuario' in st.session_state:
             st.switch_page("Estadísticas equipos")  # Ir a la página de estadísticas de equipos
 
     with col2:    
-        if st.button("Estadisticas jugadores"):
-            st.switch_page("Estadisticas jugadores") # Ir a la página de estadísticas de jugadores
+        if st.button("Estadísticas jugadores"):
+            st.switch_page("Estadísticas jugadores") # Ir a la página de estadísticas de jugadores

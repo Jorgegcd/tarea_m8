@@ -1,6 +1,8 @@
 import streamlit as st
 import common.menu as menu
 
+st.set_page_config(page_title="Estadísticas jugadores") # Configuramos la página para que el botón traiga hasta aquí desde la página inicio
+
 # Verificamos si el usuario está logueado
 if 'usuario' in st.session_state:
     menu.generarMenu(st.session_state['usuario'])

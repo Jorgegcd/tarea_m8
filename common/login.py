@@ -29,4 +29,5 @@ def logout():
     st.session_state.password_correct = False
     st.session_state.login_time = None
     st.session_state["logged_in"] = False  # Agregamos esta línea
+    st.session_state.pop('login_time', None)  # Agregamos esta línea
     st.rerun()

@@ -12,11 +12,10 @@ def generarMenu(user):
         #Mostramos el nombre del usuario
         st.write(f"Hola **{user}** ")
         # Mostramos los enlaces de páginas
-        st.page_link("home.py", label="Home", icon=":material/home:")
-        st.subheader("Tableros")
-        st.page_link("pages/pagina1.py", label="Stats", icon=":material/sell:")
-        st.page_link("pages/pagina2.py", label="Players", icon=":material/shopping_cart:")
-        st.page_link("pages/pagina3.py", label="Teams", icon=":material/group:")    
+        st.page_link("home.py", label="Inicio", icon=":material/home:")
+        st.subheader("Páginas")
+        st.page_link("pages/pagina1.py", label="Estadísticas equipos", icon=":material/sell:")
+        st.page_link("pages/pagina2.py", label="Estadisticas jugadores", icon=":material/shopping_cart:") 
         # Botón para cerrar la sesión
         btnSalir=st.button("Salir")
         if btnSalir:

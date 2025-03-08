@@ -5,8 +5,8 @@ def generarMenu(user):
     """Genera el menú dependiendo del usuario
 
     Args:
-        usuario (str): usuario utilizado para generar el menú
-    """        
+        usuario (str): usuario utilizado para generar el menú"""        
+    
     with st.sidebar:
         
         #Mostramos el nombre del usuario

@@ -10,7 +10,7 @@ def generarMenu(user):
     with st.sidebar:
         
         #Mostramos el nombre del usuario
-        st.write(f"Hola **:blue-background[{user}]** ")
+        st.write(f"Hola **{user}** ")
         # Mostramos los enlaces de páginas
         st.page_link("home.py", label="Home", icon=":material/home:")
         st.subheader("Tableros")

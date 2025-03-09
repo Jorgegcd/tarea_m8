@@ -2,7 +2,7 @@ import streamlit as st
 import common.menu as menu
 import pandas as pd
 import os
-from functions import crear_tablas
+from common.functions import crear_tablas
 
 # Configurar la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
 st.set_page_config(page_title="Stats") # Cambiamos nombre de la página

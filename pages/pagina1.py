@@ -47,5 +47,6 @@ if "selected_season" in st.session_state:
         # Redondeamos los datos a 2 decimales
         df_filtrado = df_filtrado.round(2)
         # Aplica un estilo básico para centrar el texto (esto es solo un ejemplo)
-        styled_df = df_filtrado.style.set_properties(**{'text-align': 'center'})
+        style_d = df_filtrado.style.format("{:.2f}")
+        styled_df = style_d.style.set_properties(**{'text-align': 'center'})
         st.dataframe(styled_df)

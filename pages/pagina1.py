@@ -34,7 +34,14 @@ if "selected_season" in st.session_state:
     df_temporada = df[df['season'] == st.session_state.selected_season]
     # Obtenemos los equipos únicos para esa temporada
     equipos = sorted(df_temporada['team_name'].unique())
-    equipo_seleccionado = st.selectbox("Selecciona el equipo", equipos)
     
-    # Mostramos los datos del equipo seleccionado
-    st.write("Datos del equipo:", df_temporada[df_temporada['team_name'] == equipo_seleccionado])
+    # Desplegable múltiple para seleccionar equipos (multiselect)
+    selected_teams = st.multiselect("Selecciona equipos (máximo 3)", equipos)
+    
+    # Validamos que no se seleccionen más de 3 equipos
+    if len(selected_teams) > 3:
+        st.error("Por favor, selecciona un máximo de 3 equipos.")
+    elif len(selected_teams) > 0:
+        # Filtramos el dataframe para los equipos seleccionados
+        df_filtrado = df_temporada[df_temporada['team_name'].isin(selected_teams)]
+        st.table(df_filtrado)

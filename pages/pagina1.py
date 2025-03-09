@@ -17,17 +17,24 @@ st.write("Contenido de la página de estadísticas de equipos")
 # Leemos el CSV de advanced data (ajusta la ruta según corresponda)
 df = pd.read_csv("data/advanced_data.csv")
 
-# Primer desplegable: temporadas únicas
-temporadas = sorted(df['season'].unique())
-temporada_seleccionada = st.selectbox("Selecciona la temporada", temporadas)
+# Primer formulario para seleccionar la temporada
+with st.form("form_temporada"):
+    # Desplegable con las temporadas únicas (por ejemplo, "2022/2023" y "2023/2024")
+    temporadas = sorted(df['season'].unique())
+    temporada_seleccionada = st.selectbox("Selecciona la temporada", temporadas)
+    submit_temporada = st.form_submit_button("Seleccionar temporada")
 
-# Filtramos el dataframe para la temporada seleccionada
-df_temporada = df[df['season'] == temporada_seleccionada]
+# Si se envió el formulario, guardamos la selección en el session_state
+if submit_temporada:
+    st.session_state.selected_season = temporada_seleccionada
 
-# Segundo desplegable: equipos que participaron en esa temporada
-# Se asume que en el CSV la columna con el nombre del equipo se llama 'team_name'
-equipos = sorted(df_temporada['team_name'].unique())
-equipo_seleccionado = st.selectbox("Selecciona el equipo", equipos)
-
-# Puedes mostrar los datos filtrados, por ejemplo:
-st.write("Datos del equipo:", df_temporada[df_temporada['team_name'] == equipo_seleccionado])
+# Solo si se ha seleccionado una temporada, mostramos el desplegable de equipos
+if "selected_season" in st.session_state:
+    # Filtramos el dataframe para la temporada seleccionada
+    df_temporada = df[df['season'] == st.session_state.selected_season]
+    # Obtenemos los equipos únicos para esa temporada
+    equipos = sorted(df_temporada['team_name'].unique())
+    equipo_seleccionado = st.selectbox("Selecciona el equipo", equipos)
+    
+    # Mostramos los datos del equipo seleccionado
+    st.write("Datos del equipo:", df_temporada[df_temporada['team_name'] == equipo_seleccionado])

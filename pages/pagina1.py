@@ -44,4 +44,6 @@ if "selected_season" in st.session_state:
     elif len(selected_teams) > 0:
         # Filtramos el dataframe para los equipos seleccionados
         df_filtrado = df_temporada[df_temporada['team_name'].isin(selected_teams)]
-        st.table(df_filtrado)
+        # Aplica un estilo básico para centrar el texto (esto es solo un ejemplo)
+        styled_df = df_filtrado.style.set_properties(**{'text-align': 'center'})
+        st.dataframe(styled_df)

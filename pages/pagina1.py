@@ -44,8 +44,12 @@ if "selected_season" in st.session_state:
     elif len(selected_teams) > 0:
         # Filtramos el dataframe para los equipos seleccionados
         df_filtrado = df_temporada[df_temporada['team_name'].isin(selected_teams)]
-        # Redondeamos los datos a 2 decimales
-        df_filtrado = df_filtrado.round(2)
-        # Aplica un estilo básico para centrar el texto (esto es solo un ejemplo)
-        styled_df = df_filtrado.style.format("{:.2f}")
+        # Obtener solo las columnas numéricas
+        numeric_cols = df_filtrado.select_dtypes(include=['number']).columns
+
+        # Crear un diccionario de formateo para las columnas numéricas
+        formato = {col: "{:.2f}" for col in numeric_cols}
+
+        # Aplicar el formateo y mostrar el DataFrame
+        styled_df = df_filtrado.style.format(formato)
         st.dataframe(styled_df)

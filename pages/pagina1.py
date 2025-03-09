@@ -32,16 +32,39 @@ if submit_temporada:
 if "selected_season" in st.session_state:
     # Filtramos el dataframe para la temporada seleccionada
     df_temporada = df[df['season'] == st.session_state.selected_season]
-    # Obtenemos los equipos únicos para esa temporada
-    equipos = sorted(df_temporada['team_name'].unique())
     
     # Desplegable múltiple para seleccionar equipos (multiselect)
+    equipos = sorted(df_temporada['team_name'].unique())
     selected_teams = st.multiselect("Selecciona equipos (máximo 3)", equipos)
     
     # Validamos que no se seleccionen más de 3 equipos
     if len(selected_teams) > 3:
         st.error("Por favor, selecciona un máximo de 3 equipos.")
-    elif len(selected_teams) > 0:
+    else:
+        # Mostrar los escudos según la cantidad de equipos seleccionados.
+        # Se asume que el nombre de la imagen es el team_id y que está en "../images/"
+        logos = []
+        for team in selected_teams:
+            # Obtenemos el team_id del equipo (suponiendo que 'team_id' está en el CSV)
+            team_id = df_temporada.loc[df_temporada['team_name'] == team, 'team_id'].iloc[0]
+            logo_path = f"../images/{team_id}.png"
+            logos.append(logo_path)
+        
+        if logos:
+            if len(logos) == 1:
+                col = st.columns(1)
+                col[0].image(logos[0], use_column_width=True)
+            elif len(logos) == 2:
+                cols = st.columns(2)
+                cols[0].image(logos[0], use_column_width=True)
+                cols[1].image(logos[1], use_column_width=True)
+            elif len(logos) == 3:
+                cols = st.columns(3)
+                cols[0].image(logos[0], use_column_width=True)
+                cols[1].image(logos[1], use_column_width=True)
+                cols[2].image(logos[2], use_column_width=True)
+
+
         # Filtramos el dataframe para los equipos seleccionados
         df_filtrado = df_temporada[df_temporada['team_name'].isin(selected_teams)]
         # Obtener solo las columnas numéricas

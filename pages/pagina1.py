@@ -1,6 +1,7 @@
 import streamlit as st
 import common.menu as menu
 import pandas as pd
+import os
 
 # Configurar la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
 st.set_page_config(page_title="Stats") # Cambiamos nombre de la página
@@ -42,37 +43,48 @@ if "selected_season" in st.session_state:
         st.error("Por favor, selecciona un máximo de 3 equipos.")
     else:
         # Mostrar los escudos según la cantidad de equipos seleccionados.
-        # Se asume que el nombre de la imagen es el team_id y que está en "../images/"
         logos = []
+        # Obtenemos la ruta absoluta usando os.getcwd()
+        current_dir = os.getcwd()
         for team in selected_teams:
-            # Obtenemos el team_id del equipo (suponiendo que 'team_id' está en el CSV)
+            # Se asume que en el DataFrame existe la columna 'team_id'
             team_id = df_temporada.loc[df_temporada['team_name'] == team, 'team_id'].iloc[0]
-            logo_path = f"../images/{team_id}.png"
+            # Construimos la ruta absoluta: images está en la raíz (tarea_m8/images)
+            logo_path = os.path.join(current_dir, "images", f"{team_id}.png")
             logos.append(logo_path)
         
         if logos:
             if len(logos) == 1:
                 col = st.columns(1)
-                col[0].image(logos[0], use_column_width=True)
+                if os.path.exists(logos[0]):
+                    col[0].image(logos[0], use_column_width=True)
+                else:
+                    col[0].error(f"No se encontró la imagen: {logos[0]}")
             elif len(logos) == 2:
                 cols = st.columns(2)
-                cols[0].image(logos[0], use_column_width=True)
-                cols[1].image(logos[1], use_column_width=True)
+                for i in range(2):
+                    if os.path.exists(logos[i]):
+                        cols[i].image(logos[i], use_column_width=True)
+                    else:
+                        cols[i].error(f"No se encontró la imagen: {logos[i]}")
             elif len(logos) == 3:
                 cols = st.columns(3)
-                cols[0].image(logos[0], use_column_width=True)
-                cols[1].image(logos[1], use_column_width=True)
-                cols[2].image(logos[2], use_column_width=True)
+                for i in range(3):
+                    if os.path.exists(logos[i]):
+                        cols[i].image(logos[i], use_column_width=True)
+                    else:
+                        cols[i].error(f"No se encontró la imagen: {logos[i]}")
 
+        # Mostrar la tabla filtrada con los datos de los equipos seleccionados
+        if len(selected_teams) > 0:
+            # Filtramos el dataframe para los equipos seleccionados
+            df_filtrado = df_temporada[df_temporada['team_name'].isin(selected_teams)]
+            # Obtener solo las columnas numéricas
+            numeric_cols = df_filtrado.select_dtypes(include=['number']).columns
 
-        # Filtramos el dataframe para los equipos seleccionados
-        df_filtrado = df_temporada[df_temporada['team_name'].isin(selected_teams)]
-        # Obtener solo las columnas numéricas
-        numeric_cols = df_filtrado.select_dtypes(include=['number']).columns
+            # Crear un diccionario de formateo para las columnas numéricas
+            formato = {col: "{:.2f}" for col in numeric_cols}
 
-        # Crear un diccionario de formateo para las columnas numéricas
-        formato = {col: "{:.2f}" for col in numeric_cols}
-
-        # Aplicar el formateo y mostrar el DataFrame
-        styled_df = df_filtrado.style.format(formato)
-        st.dataframe(styled_df)
+            # Aplicar el formateo y mostrar el DataFrame
+            styled_df = df_filtrado.style.format(formato)
+            st.dataframe(styled_df)

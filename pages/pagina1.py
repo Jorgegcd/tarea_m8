@@ -2,6 +2,7 @@ import streamlit as st
 import common.menu as menu
 import pandas as pd
 import os
+from functions import crear_tablas
 
 # Configurar la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
 st.set_page_config(page_title="Stats") # Cambiamos nombre de la página
@@ -50,41 +51,70 @@ if "selected_season" in st.session_state:
             # Se asume que en el DataFrame existe la columna 'team_id'
             team_id = df_temporada.loc[df_temporada['team_name'] == team, 'team_id'].iloc[0]
             # Construimos la ruta absoluta: images está en la raíz (tarea_m8/images)
-            logo_path = os.path.join(current_dir, "images", f"{team_id}.png")
+            logo_path = os.path.join(current_dir, "images", "teams", f"{team_id}.png")
             logos.append(logo_path)
         
         if logos:
             if len(logos) == 1:
                 col = st.columns(1)
                 if os.path.exists(logos[0]):
-                    col[0].image(logos[0], use_column_width=True)
+                    col[0].image(logos[0], width=100)
                 else:
                     col[0].error(f"No se encontró la imagen: {logos[0]}")
             elif len(logos) == 2:
-                cols = st.columns(2)
-                for i in range(2):
-                    if os.path.exists(logos[i]):
-                        cols[i].image(logos[i], use_column_width=True)
-                    else:
-                        cols[i].error(f"No se encontró la imagen: {logos[i]}")
+                # Creamos tres columnas: el primer logo en la primera y el segundo en la tercera.
+                cols = st.columns([1, 1, 1])
+                # Ubica el primer logo en la primera columna (más a la izquierda)
+                if os.path.exists(logos[0]):
+                    cols[0].image(logos[0], width=150)
+                else:
+                    cols[0].error(f"No se encontró la imagen: {logos[0]}")
+                # Ubica el segundo logo en la última columna (más a la derecha)
+                if os.path.exists(logos[1]):
+                    cols[2].image(logos[1], width=150)
+                else:
+                    cols[2].error(f"No se encontró la imagen: {logos[1]}")
             elif len(logos) == 3:
-                cols = st.columns(3)
-                for i in range(3):
-                    if os.path.exists(logos[i]):
-                        cols[i].image(logos[i], use_column_width=True)
-                    else:
-                        cols[i].error(f"No se encontró la imagen: {logos[i]}")
+                # Creamos cinco columnas para empujar el contenido hacia los extremos
+                cols = st.columns([1, 1, 1, 1, 1])
+                # Primer logo en la primera columna (izquierda)
+                if os.path.exists(logos[0]):
+                    cols[0].image(logos[0], width=150)
+                else:
+                    cols[0].error(f"No se encontró la imagen: {logos[0]}")
+                # Segundo logo en la columna central (la tercera)
+                if os.path.exists(logos[1]):
+                    cols[2].image(logos[1], width=150)
+                else:
+                    cols[2].error(f"No se encontró la imagen: {logos[1]}")
+                # Tercer logo en la quinta columna (derecha)
+                if os.path.exists(logos[2]):
+                    cols[4].image(logos[2], width=150)
+                else:
+                    cols[4].error(f"No se encontró la imagen: {logos[2]}")
 
         # Mostrar la tabla filtrada con los datos de los equipos seleccionados
         if len(selected_teams) > 0:
             # Filtramos el dataframe para los equipos seleccionados
             df_filtrado = df_temporada[df_temporada['team_name'].isin(selected_teams)]
-            # Obtener solo las columnas numéricas
-            numeric_cols = df_filtrado.select_dtypes(include=['number']).columns
-
-            # Crear un diccionario de formateo para las columnas numéricas
-            formato = {col: "{:.2f}" for col in numeric_cols}
-
-            # Aplicar el formateo y mostrar el DataFrame
-            styled_df = df_filtrado.style.format(formato)
-            st.dataframe(styled_df)
+            
+            # Llamamos a la función que genera las dos tablas a partir del DataFrame filtrado
+            tabla_ataque, tabla_defensa = crear_tablas(df_filtrado)
+            
+            # Creamos dos columnas para mostrar las tablas en paralelo
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("Estadísticas avanzadas ataque")
+                # Para formatear los números, obtenemos las columnas numéricas y aplicamos formato
+                numeric_cols = tabla_ataque.select_dtypes(include=['number']).columns
+                formato = {col: "{:.2f}" for col in numeric_cols}
+                styled_tabla_ataque = tabla_ataque.style.format(formato)
+                st.dataframe(styled_tabla_ataque)
+            
+            with col2:
+                st.subheader("Estadísticas avanzadas defensa")
+                numeric_cols = tabla_defensa.select_dtypes(include=['number']).columns
+                formato = {col: "{:.2f}" for col in numeric_cols}
+                styled_tabla_defensa = tabla_defensa.style.format(formato)
+                st.dataframe(styled_tabla_defensa)

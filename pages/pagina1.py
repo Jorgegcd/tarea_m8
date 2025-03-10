@@ -3,9 +3,13 @@ import common.menu as menu
 import pandas as pd
 import os
 from common.functions import crear_tablas
+from sqlalchemy import create_engine
 
 # Configurar la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
 st.set_page_config(page_title="Stats") # Cambiamos nombre de la página
+
+# Crea el engine de conexión a la base de datos MySQL
+engine = create_engine("mysql+pymysql://jgcornejo:Avellanas9?@localhost:3306/tarea_m8", echo=True)
 
 # Mostrar el menú lateral si el usuario está logueado.
 if 'usuario' in st.session_state:
@@ -92,6 +96,45 @@ if "selected_season" in st.session_state:
                     cols[4].image(logos[2], width=150)
                 else:
                     cols[4].error(f"No se encontró la imagen: {logos[2]}")
+
+        if len(selected_teams) > 0:
+            # Generamos un string con los nombres entre comillas, separados por coma
+            equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
+            query = f"""
+            SELECT 
+                t.team_name,
+                m.season,
+                SUM(m.pts) AS total_pts,
+                SUM(m.fgm) AS total_fgm,
+                SUM(m.fga) AS total_fga,
+                COUNT(m.match) AS matches_count
+            FROM matches m
+            JOIN teams t ON m.team_id = t.team_id
+            WHERE t.team_name IN ({equipos_str})
+            GROUP BY t.team_name, m.season
+            ORDER BY t.team_name, m.season;
+            """
+        else:
+            # Si no hay equipos seleccionados, mostramos todos
+            query = """
+            SELECT 
+                t.team_name,
+                m.season,
+                SUM(m.pts) AS total_pts,
+                SUM(m.fgm) AS total_fgm,
+                SUM(m.fga) AS total_fga,
+                COUNT(m.match) AS matches_count
+            FROM matches m
+            JOIN teams t ON m.team_id = t.team_id
+            GROUP BY t.team_name, m.season
+            ORDER BY t.team_name, m.season;
+            """
+
+        # Ejecutamos la consulta y la leemos en un DataFrame
+        df_result = pd.read_sql(query, engine)
+
+        # Mostramos la tabla en Streamlit
+        st.dataframe(df_result)
 
         # Mostrar la tabla filtrada con los datos de los equipos seleccionados
         if len(selected_teams) > 0:

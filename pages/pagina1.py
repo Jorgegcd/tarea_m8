@@ -98,16 +98,29 @@ if "selected_season" in st.session_state:
                     cols[4].error(f"No se encontró la imagen: {logos[2]}")
 
         if len(selected_teams) > 0:
-            st.subheader("Promedios por partido")
+            st.subheader("Promedios por partido equipo")
             # Generamos un string con los nombres entre comillas, separados por coma
             equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
             query = f"""
             SELECT 
                 t.team_name AS "Equipo",
                 COUNT(m.match) AS "Partidos",
-                AVG(m.pts) AS "Puntos",
-                SUM(m.fgm) AS "TC Anotados",
-                SUM(m.fga) AS "TC Intentados"
+                AVG(m.pts) AS "Pts",
+                AVG(m.fg2m) AS "T2A",
+                AVG(m.fga) AS "T2I",
+                AVG(m.fg3m) AS "T3A",
+                AVG(m.fg3a) AS "T3I",
+                AVG(m.fgm) AS "TCA",
+                AVG(m.fga) AS "TCI",
+                AVG(m.ftm) AS "TLA",
+                AVG(m.fta) AS "TLI",
+                AVG(m.or) AS "Reb. of.",
+                AVG(m.dr) AS "Reb. def.",
+                AVG(m.tr) AS "Reb. tot.",
+                AVG(m.ass) AS "Ast",
+                AVG(m.stl) AS "Robos",
+                AVG(m.blk) AS "Tapones",
+                AVG(m.to) AS "Pérdidas"
             FROM matches m
             JOIN teams t ON m.team_id = t.team_id
             WHERE t.team_name IN ({equipos_str}) AND m.season = '{temporada_seleccionada}'

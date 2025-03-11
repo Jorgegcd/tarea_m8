@@ -109,7 +109,7 @@ if "selected_season" in st.session_state:
                 SELECT 
                     t.team_name AS "Equipo",
                     COUNT(m.match) AS "Partidos",
-                    AVG(m.pts) AS "Pts",
+                    AVG(m.pts) AS "Puntos",
                     AVG(m.fg2m) AS "T2A",
                     AVG(m.fga) AS "T2I",
                     AVG(m.fg3m) AS "T3A",
@@ -138,7 +138,7 @@ if "selected_season" in st.session_state:
                 formato = {col: "{:.2f}" for col in numeric_cols}
                 styled_sql_team = df_sql_team.style.format(formato)
                 # Mostramos la tabla en Streamlit
-                st.dataframe(df_sql_team)
+                st.dataframe(styled_sql_team)
             with col2:
                 st.subheader("Promedios por partido de los rivales")
                 # Generamos un string con los nombres entre comillas, separados por coma
@@ -147,7 +147,7 @@ if "selected_season" in st.session_state:
                 SELECT 
                     t.team_name AS "Equipo",
                     COUNT(m.match) AS "Partidos",
-                    AVG(m.pts_opp) AS "Pts recibidos",
+                    AVG(m.pts_opp) AS "Puntos recibidos",
                     AVG(m.fg2m_opp) AS "T2A rival",
                     AVG(m.fga_opp) AS "T2I rival",
                     AVG(m.fg3m_opp) AS "T3A rival",
@@ -171,12 +171,12 @@ if "selected_season" in st.session_state:
                 """
 
                 # Ejecutamos la consulta y la leemos en un DataFrame
-                df_sql_team = pd.read_sql(query, engine)
-                numeric_cols = df_sql_team.select_dtypes(include=['number']).columns
+                df_sql_opp = pd.read_sql(query, engine)
+                numeric_cols = df_sql_opp.select_dtypes(include=['number']).columns
                 formato = {col: "{:.2f}" for col in numeric_cols}
-                styled_sql_team = df_sql_team.style.format(formato)
+                styled_sql_opp = df_sql_opp.style.format(formato)
                 # Mostramos la tabla en Streamlit
-                st.dataframe(df_sql_team)
+                st.dataframe(styled_sql_opp)
             
         else:
             st.info("Por favor, selecciona equipos para ver los datos.")

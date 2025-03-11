@@ -18,8 +18,7 @@ if 'usuario' in st.session_state:
 else:
     st.write("Por favor, inicia sesión para ver el menú.")
 
-st.header("Estadísticas Equipos - Team Stats")
-st.write("Contenido de la página de estadísticas de equipos")
+st.markdown("<h1 style='text-align: center;'>Comparador de estadísticas equipos ABA League 2</h1>", unsafe_allow_html=True)
 
 # Leemos el CSV de advanced data (ajusta la ruta según corresponda)
 df = pd.read_csv("data/advanced_data.csv")
@@ -85,7 +84,7 @@ if "selected_season" in st.session_state:
             col1, col2 = st.columns(2)
             
             with col1:
-                st.subheader("Promedios por partido equipo")
+                st.markdown("<h3 style='text-align: center;'>Promedios por partido equipo</h3>", unsafe_allow_html=True)
                 # Generamos un string con los nombres entre comillas, separados por coma
                 equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
                 query = f"""
@@ -122,8 +121,9 @@ if "selected_season" in st.session_state:
                 styled_sql_team = df_sql_team.style.format(formato)
                 # Mostramos la tabla en Streamlit
                 st.dataframe(styled_sql_team)
+            
             with col2:
-                st.subheader("Promedios por partido de los rivales")
+                st.markdown("<h3 style='text-align: center;'>Promedios por partido de los rivales</h3>", unsafe_allow_html=True)
                 # Generamos un string con los nombres entre comillas, separados por coma
                 equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
                 query = f"""
@@ -139,9 +139,9 @@ if "selected_season" in st.session_state:
                     AVG(m.fga_opp) AS "TCI rival",
                     AVG(m.ftm_opp) AS "TLA rival",
                     AVG(m.fta_opp) AS "TLI rival",
-                    AVG(m.or_opp) AS "Reb. of. rival",
-                    AVG(m.dr_opp) AS "Reb. def. rival",
-                    AVG(m.tr_opp) AS "Reb. tot. rival",
+                    AVG(m.or_opp) AS "Reb of rival",
+                    AVG(m.dr_opp) AS "Reb def rival",
+                    AVG(m.tr_opp) AS "Reb tot rival",
                     AVG(m.ass_opp) AS "Ast rival",
                     AVG(m.st_opp) AS "Robos rival",
                     AVG(m.blk_opp) AS "Tapones rival",
@@ -164,21 +164,35 @@ if "selected_season" in st.session_state:
         else:
             st.info("Por favor, selecciona equipos para ver los datos.")
         
+        # Mostramos título de sección centrado
+        st.markdown("<h3 style='text-align: center;'>Comparación de valores promedio de equipos y producidos por rivales</h3>", unsafe_allow_html=True)
+
         if len(selected_teams) > 0:
             # Creamos dos columnas para mostrar las gráficas en paralelo
             col1, col2 = st.columns(2)
             
             with col1:
-                 # Asumimos que la lista selected_teams respeta el orden de selección
+                
+                # Asumimos que la lista selected_teams respeta el orden de selección
                 equipo_left = selected_teams[0]
                 equipo_right = selected_teams[1]
                 
-                st.subheader("Comparación de métricas (Pirámide)")
                 # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
                 metrics = ["Puntos", "TCA", "TCI", "Ast"]  # Ajusta según tus necesidades
                 
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
                 grafica_metricas_comparacion(df_sql_team, equipo_left, equipo_right, metrics)
+            
+            with col2:
+                 # Asumimos que la lista selected_teams respeta el orden de selección
+                equipo_left = selected_teams[0]
+                equipo_right = selected_teams[1]
+                
+                # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
+                metrics = ["Puntos recibidos", "Reb tot rival", "TCI rival", "Ast rival"]  # Ajusta según tus necesidades
+                
+                # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                grafica_metricas_comparacion(df_sql_opp, equipo_left, equipo_right, metrics)
         else:
             st.info("Selecciona exactamente 2 equipos para ver la gráfica en formato pirámide.")
 
@@ -194,7 +208,7 @@ if "selected_season" in st.session_state:
             col1, col2 = st.columns(2)
             
             with col1:
-                st.subheader("Estadísticas avanzadas ataque")
+                st.markdown("<h3 style='text-align: center;'>Estadísticas avanzadas ataque</h3>", unsafe_allow_html=True)
                 # Para formatear los números, obtenemos las columnas numéricas y aplicamos formato
                 numeric_cols = tabla_ataque.select_dtypes(include=['number']).columns
                 formato = {col: "{:.2f}" for col in numeric_cols}
@@ -202,7 +216,7 @@ if "selected_season" in st.session_state:
                 st.dataframe(styled_tabla_ataque)
             
             with col2:
-                st.subheader("Estadísticas avanzadas defensa")
+                st.markdown("<h3 style='text-align: center;'>Estadísticas avanzadas defensa</h3>", unsafe_allow_html=True)
                 numeric_cols = tabla_defensa.select_dtypes(include=['number']).columns
                 formato = {col: "{:.2f}" for col in numeric_cols}
                 styled_tabla_defensa = tabla_defensa.style.format(formato)

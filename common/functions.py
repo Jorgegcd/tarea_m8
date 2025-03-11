@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import plotly.graph_objects as go
 
 # Supongamos que "df" es tu DataFrame original
 def crear_tablas(df):
@@ -31,18 +32,20 @@ def crear_tablas(df):
 
 def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
     """
-    Genera una gráfica de barras horizontal estilo pirámide de población para comparar
-    dos equipos. Para cada métrica, los valores del equipo_left se muestran como negativos 
-    (a la izquierda) y los del equipo_right como positivos (a la derecha).
+    Genera una gráfica estilo pirámide de población para comparar dos equipos.
+    Los valores del equipo_left se muestran como negativos (a la izquierda) y los
+    del equipo_right como positivos (a la derecha). Se añaden anotaciones centradas
+    en x=0 con el nombre de cada métrica.
     
     Args:
-        df (DataFrame): DataFrame obtenido de la consulta SQL (sin estilos).
-        equipo_left (str): Nombre del equipo que se mostrará a la izquierda.
-        equipo_right (str): Nombre del equipo que se mostrará a la derecha.
-        metrics (list): Lista de nombres de columnas (métricas) a comparar. Deben coincidir 
-                        exactamente con los alias de la consulta SQL.
+        df (DataFrame): DataFrame crudo obtenido de la consulta SQL, con columna "Equipo".
+        equipo_left (str): Nombre del equipo que se mostrará a la izquierda (primer seleccionado).
+        equipo_right (str): Nombre del equipo que se mostrará a la derecha (segundo seleccionado).
+        metrics (list): Lista de métricas (cuyos alias deben coincidir con los de df) a comparar.
     """
-    rows = []
+    left_vals = []
+    right_vals = []
+    # Recorremos cada métrica y extraemos los valores para cada equipo
     for metric in metrics:
         try:
             left_val = df.loc[df['Equipo'] == equipo_left, metric].iloc[0]
@@ -50,42 +53,86 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
         except IndexError:
             st.error(f"No se encontró la métrica '{metric}' para uno de los equipos.")
             return
-        # Multiplicamos el valor del equipo de la izquierda por -1 para que se muestre a la izquierda
-        rows.append({"Métrica": metric, "Equipo": equipo_left, "Valor": -left_val})
-        rows.append({"Métrica": metric, "Equipo": equipo_right, "Valor": right_val})
+        left_vals.append(left_val)  # Multiplicamos por -1 para que aparezca a la izquierda
+        right_vals.append(right_val)
+
+    # Determinamos un gap en el centro (puede ser un porcentaje del máximo valor)
+    max_val = max(max(left_vals), max(right_vals))
+    gap = 0.2 * max_val  # ajustá este factor según la escala de tus datos
     
-    data_plot = pd.DataFrame(rows)
+    # Creamos la figura
+    fig = go.Figure()
     
-    # Generamos la gráfica de barras horizontal
-    fig = px.bar(
-        data_plot,
-        x="Valor",
-        y="Métrica",
-        color="Equipo",
-        orientation="h",
-        barmode="group",
-        title="Comparación de métricas entre equipos"
+    # Añadimos la barra para el equipo izquierdo
+    fig.add_trace(go.Bar(
+        y=metrics,
+        x=[-val for val in left_vals],
+        base=[-gap] * len(metrics),
+        name=equipo_left,
+        orientation='h',
+        marker_color='steelblue'
+    ))
+    
+    # Añadimos la barra para el equipo derecho
+    fig.add_trace(go.Bar(
+        y=metrics,
+        x=right_vals,
+        base=[gap] * len(metrics),
+        name=equipo_right,
+        orientation='h',
+        marker_color='tomato'
+    ))
+    
+    # Actualizamos el layout para que ambas trazas se superpongan (sin offset vertical)
+    fig.update_layout(
+        barmode='overlay',
+        showlegend=True,  # Mostramos leyenda
     )
     
-    # Quitamos la leyenda
-    fig.update_layout(showlegend=False)
-    # Eliminamos los textos sobre las barras
-    fig.update_traces(texttemplate=None)
+    # Configuramos un rango simétrico para el eje x considerando el gap
+    left_max = gap + max(left_vals)
+    right_max = gap + max(right_vals)
+    max_range = max(left_max, right_max)
+    fig.update_xaxes(range=[-max_range * 1.1, max_range * 1.1])
 
-    # Establecemos un rango simétrico para el eje x
-    max_val = data_plot['Valor'].abs().max()
-    fig.update_xaxes(range=[-max_val*1.1, max_val*1.1])
+    # Ocultamos los tick labels del eje y para no duplicar los nombres de las métricas
+    fig.update_yaxes(showticklabels=False)
     
-    # Agregamos una anotación en x=0 para cada métrica con el nombre de la misma, centrada
-    for metric in metrics:
-        fig.add_annotation(
+    # Añadimos una anotación centrada en x=0 para cada métrica (en el eje y)
+    annotations = []
+    for i, metric in enumerate(metrics):
+        annotations.append(dict(
             x=0,
             y=metric,
             text=metric,
             showarrow=False,
-            font=dict(size=12, color="black"),
+            font=dict(size=12),
             xanchor="center",
             yanchor="middle"
-        )
+        ))
+    
+        # Valor del equipo de la izquierda (mostrar valor positivo)
+        annotations.append(dict(
+            x=-gap,
+            y=metric,
+            text=f"{left_vals[i]:.2f}",
+            showarrow=False,
+            font=dict(size=12),
+            xanchor="right",
+            yanchor="middle"
+        ))
+
+        # Valor del equipo de la derecha (mostrar valor negativo)
+        annotations.append(dict(
+            x=gap,
+            y=metric,
+            text=f"{right_vals[i]:.2f}",
+            showarrow=False,
+            font=dict(size=12),
+            xanchor="left",
+            yanchor="middle"
+        ))
+
+    fig.update_layout(annotations=annotations)
     
     st.plotly_chart(fig, use_container_width=True)

@@ -103,11 +103,11 @@ if "selected_season" in st.session_state:
             equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
             query = f"""
             SELECT 
-                t.team_name AS Equipo,
-                COUNT(m.match) AS Partidos,
-                AVG(m.pts) AS Puntos,
-                SUM(m.fgm) AS TC Anotados,
-                SUM(m.fga) AS TC Intentados
+                t.team_name AS "Equipo",
+                COUNT(m.match) AS "Partidos",
+                AVG(m.pts) AS "Puntos",
+                SUM(m.fgm) AS "TC Anotados",
+                SUM(m.fga) AS "TC Intentados"
             FROM matches m
             JOIN teams t ON m.team_id = t.team_id
             WHERE t.team_name IN ({equipos_str}) AND m.season = '{temporada_seleccionada}'

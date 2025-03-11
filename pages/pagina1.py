@@ -98,37 +98,24 @@ if "selected_season" in st.session_state:
                     cols[4].error(f"No se encontró la imagen: {logos[2]}")
 
         if len(selected_teams) > 0:
+            st.subheader("Promedios por partido")
             # Generamos un string con los nombres entre comillas, separados por coma
             equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
             query = f"""
             SELECT 
-                t.team_name,
-                m.season,
-                SUM(m.pts) AS total_pts,
-                SUM(m.fgm) AS total_fgm,
-                SUM(m.fga) AS total_fga,
-                COUNT(m.match) AS matches_count
+                t.team_name AS Equipo,
+                COUNT(m.match) AS Partidos,
+                AVG(m.pts) AS Puntos,
+                SUM(m.fgm) AS TC Anotados,
+                SUM(m.fga) AS TC Intentados
             FROM matches m
             JOIN teams t ON m.team_id = t.team_id
-            WHERE t.team_name IN ({equipos_str})
+            WHERE t.team_name IN ({equipos_str}) AND m.season = '{temporada_seleccionada}'
             GROUP BY t.team_name, m.season
             ORDER BY t.team_name, m.season;
             """
         else:
-            # Si no hay equipos seleccionados, mostramos todos
-            query = """
-            SELECT 
-                t.team_name,
-                m.season,
-                SUM(m.pts) AS total_pts,
-                SUM(m.fgm) AS total_fgm,
-                SUM(m.fga) AS total_fga,
-                COUNT(m.match) AS matches_count
-            FROM matches m
-            JOIN teams t ON m.team_id = t.team_id
-            GROUP BY t.team_name, m.season
-            ORDER BY t.team_name, m.season;
-            """
+            st.info("Por favor, selecciona equipos para ver los datos.")
 
         # Ejecutamos la consulta y la leemos en un DataFrame
         df_result = pd.read_sql(query, engine)

@@ -42,11 +42,11 @@ if "selected_season" in st.session_state:
     
     # Desplegable múltiple para seleccionar equipos (multiselect)
     equipos = sorted(df_temporada['team_name'].unique())
-    selected_teams = st.multiselect("Selecciona equipos (máximo 3)", equipos)
+    selected_teams = st.multiselect("Selecciona equipos (máximo 2)", equipos)
     
-    # Validamos que no se seleccionen más de 3 equipos
-    if len(selected_teams) > 3:
-        st.error("Por favor, selecciona un máximo de 3 equipos.")
+    # Validamos que no se seleccionen más de 2 equipos
+    if len(selected_teams) > 2:
+        st.error("Por favor, selecciona un máximo de 2 equipos.")
     else:
         # Mostrar los escudos según la cantidad de equipos seleccionados.
         logos = []
@@ -63,7 +63,7 @@ if "selected_season" in st.session_state:
             if len(logos) == 1:
                 col = st.columns(1)
                 if os.path.exists(logos[0]):
-                    col[0].image(logos[0], width=100)
+                    col[0].image(logos[0], width=150)
                 else:
                     col[0].error(f"No se encontró la imagen: {logos[0]}")
             elif len(logos) == 2:
@@ -79,24 +79,6 @@ if "selected_season" in st.session_state:
                     cols[2].image(logos[1], width=150)
                 else:
                     cols[2].error(f"No se encontró la imagen: {logos[1]}")
-            elif len(logos) == 3:
-                # Creamos cinco columnas para empujar el contenido hacia los extremos
-                cols = st.columns([1, 1, 1, 1, 1])
-                # Primer logo en la primera columna (izquierda)
-                if os.path.exists(logos[0]):
-                    cols[0].image(logos[0], width=150)
-                else:
-                    cols[0].error(f"No se encontró la imagen: {logos[0]}")
-                # Segundo logo en la columna central (la tercera)
-                if os.path.exists(logos[1]):
-                    cols[2].image(logos[1], width=150)
-                else:
-                    cols[2].error(f"No se encontró la imagen: {logos[1]}")
-                # Tercer logo en la quinta columna (derecha)
-                if os.path.exists(logos[2]):
-                    cols[4].image(logos[2], width=150)
-                else:
-                    cols[4].error(f"No se encontró la imagen: {logos[2]}")
 
         if len(selected_teams) > 0:
             # Creamos dos columnas para mostrar las tablas en paralelo

@@ -114,14 +114,13 @@ if "selected_season" in st.session_state:
             GROUP BY t.team_name, m.season
             ORDER BY t.team_name, m.season;
             """
+            # Ejecutamos la consulta y la leemos en un DataFrame
+            df_result = pd.read_sql(query, engine)
+
+            # Mostramos la tabla en Streamlit
+            st.dataframe(df_result)
         else:
             st.info("Por favor, selecciona equipos para ver los datos.")
-
-        # Ejecutamos la consulta y la leemos en un DataFrame
-        df_result = pd.read_sql(query, engine)
-
-        # Mostramos la tabla en Streamlit
-        st.dataframe(df_result)
 
         # Mostrar la tabla filtrada con los datos de los equipos seleccionados
         if len(selected_teams) > 0:

@@ -98,40 +98,86 @@ if "selected_season" in st.session_state:
                     cols[4].error(f"No se encontró la imagen: {logos[2]}")
 
         if len(selected_teams) > 0:
-            st.subheader("Promedios por partido equipo")
-            # Generamos un string con los nombres entre comillas, separados por coma
-            equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
-            query = f"""
-            SELECT 
-                t.team_name AS "Equipo",
-                COUNT(m.match) AS "Partidos",
-                AVG(m.pts) AS "Pts",
-                AVG(m.fg2m) AS "T2A",
-                AVG(m.fga) AS "T2I",
-                AVG(m.fg3m) AS "T3A",
-                AVG(m.fg3a) AS "T3I",
-                AVG(m.fgm) AS "TCA",
-                AVG(m.fga) AS "TCI",
-                AVG(m.ftm) AS "TLA",
-                AVG(m.fta) AS "TLI",
-                AVG(m.or) AS "Reb. of.",
-                AVG(m.dr) AS "Reb. def.",
-                AVG(m.tr) AS "Reb. tot.",
-                AVG(m.ass) AS "Ast",
-                AVG(m.stl) AS "Robos",
-                AVG(m.blk) AS "Tapones",
-                AVG(m.to) AS "Pérdidas"
-            FROM matches m
-            JOIN teams t ON m.team_id = t.team_id
-            WHERE t.team_name IN ({equipos_str}) AND m.season = '{temporada_seleccionada}'
-            GROUP BY t.team_name, m.season
-            ORDER BY t.team_name, m.season;
-            """
-            # Ejecutamos la consulta y la leemos en un DataFrame
-            df_result = pd.read_sql(query, engine)
+            # Creamos dos columnas para mostrar las tablas en paralelo
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("Promedios por partido equipo")
+                # Generamos un string con los nombres entre comillas, separados por coma
+                equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
+                query = f"""
+                SELECT 
+                    t.team_name AS "Equipo",
+                    COUNT(m.match) AS "Partidos",
+                    AVG(m.pts) AS "Pts",
+                    AVG(m.fg2m) AS "T2A",
+                    AVG(m.fga) AS "T2I",
+                    AVG(m.fg3m) AS "T3A",
+                    AVG(m.fg3a) AS "T3I",
+                    AVG(m.fgm) AS "TCA",
+                    AVG(m.fga) AS "TCI",
+                    AVG(m.ftm) AS "TLA",
+                    AVG(m.fta) AS "TLI",
+                    AVG(m.or) AS "Reb. of.",
+                    AVG(m.dr) AS "Reb. def.",
+                    AVG(m.tr) AS "Reb. tot.",
+                    AVG(m.ass) AS "Ast",
+                    AVG(m.st) AS "Robos",
+                    AVG(m.blk) AS "Tapones",
+                    AVG(m.to) AS "Pérdidas"
+                FROM matches m
+                JOIN teams t ON m.team_id = t.team_id
+                WHERE t.team_name IN ({equipos_str}) AND m.season = '{temporada_seleccionada}'
+                GROUP BY t.team_name, m.season
+                ORDER BY t.team_name, m.season;
+                """
 
-            # Mostramos la tabla en Streamlit
-            st.dataframe(df_result)
+                # Ejecutamos la consulta y la leemos en un DataFrame
+                df_sql_team = pd.read_sql(query, engine)
+                numeric_cols = df_sql_team.select_dtypes(include=['number']).columns
+                formato = {col: "{:.2f}" for col in numeric_cols}
+                styled_sql_team = df_sql_team.style.format(formato)
+                # Mostramos la tabla en Streamlit
+                st.dataframe(df_sql_team)
+            with col2:
+                st.subheader("Promedios por partido rivales")
+                # Generamos un string con los nombres entre comillas, separados por coma
+                equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
+                query = f"""
+                SELECT 
+                    t.team_name AS "Equipo",
+                    COUNT(m.match) AS "Partidos",
+                    AVG(m.pts_opp) AS "Pts recibidos",
+                    AVG(m.fg2m_opp) AS "T2A rival",
+                    AVG(m.fga_opp) AS "T2I rival",
+                    AVG(m.fg3m_opp) AS "T3A rival",
+                    AVG(m.fg3a_opp) AS "T3I rival",
+                    AVG(m.fgm_opp) AS "TCA rival",
+                    AVG(m.fga_opp) AS "TCI rival",
+                    AVG(m.ftm_opp) AS "TLA rival",
+                    AVG(m.fta_opp) AS "TLI rival",
+                    AVG(m.or_opp) AS "Reb. of. rival",
+                    AVG(m.dr_opp) AS "Reb. def. rival",
+                    AVG(m.tr_opp) AS "Reb. tot. rival",
+                    AVG(m.ass_opp) AS "Ast rival",
+                    AVG(m.st_opp) AS "Robos rival",
+                    AVG(m.blk_opp) AS "Tapones rival",
+                    AVG(m.to_opp) AS "Pérdidas rival"
+                FROM matches m
+                JOIN teams t ON m.team_id = t.team_id
+                WHERE t.team_name IN ({equipos_str}) AND m.season = '{temporada_seleccionada}'
+                GROUP BY t.team_name, m.season
+                ORDER BY t.team_name, m.season;
+                """
+
+                # Ejecutamos la consulta y la leemos en un DataFrame
+                df_sql_team = pd.read_sql(query, engine)
+                numeric_cols = df_sql_team.select_dtypes(include=['number']).columns
+                formato = {col: "{:.2f}" for col in numeric_cols}
+                styled_sql_team = df_sql_team.style.format(formato)
+                # Mostramos la tabla en Streamlit
+                st.dataframe(df_sql_team)
+            
         else:
             st.info("Por favor, selecciona equipos para ver los datos.")
 

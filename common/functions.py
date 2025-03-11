@@ -1,4 +1,6 @@
 import pandas as pd
+import plotly.express as px
+import streamlit as st
 
 # Supongamos que "df" es tu DataFrame original
 def crear_tablas(df):
@@ -26,3 +28,41 @@ def crear_tablas(df):
                               'to%_opp': 'Pérdidas% Rivales', 'blk%_opp':'Tapones% Rivales', 'four_factors_opp':'Four Factors Rivales'})
     
     return tabla1, tabla2
+
+def grafica_metricas_comparacion(df, selected_teams, metrics):
+    """
+    Genera una gráfica de barras horizontal que compara para cada métrica
+    los valores de los equipos seleccionados y la mediana de todos los equipos.
+    
+    Args:
+        df (DataFrame): DataFrame filtrado para la temporada seleccionada.
+        selected_teams (list): Lista de nombres de equipos seleccionados.
+        metrics (list): Lista de métricas (columnas numéricas) a comparar.
+    """
+    rows = []
+    for metric in metrics:
+        # Calcular la mediana de la métrica para todos los equipos en la temporada
+        median_val = df[metric].median()
+        # Agregar los valores para cada equipo seleccionado
+        for team in selected_teams:
+            try:
+                # Se asume que cada equipo tiene una única fila en df
+                team_val = df.loc[df['Equipo'] == team, metric].iloc[0]
+            except IndexError:
+                team_val = None
+            rows.append({"Métrica": metric, "Equipo": team, "Valor": team_val})
+        # Agregar la mediana
+        rows.append({"Métrica": metric, "Equipo": "Mediana", "Valor": median_val})
+    
+    data_plot = pd.DataFrame(rows)
+    
+    fig = px.bar(
+        data_plot,
+        x="Valor",
+        y="Métrica",
+        color="Equipo",
+        orientation="h",
+        barmode="group",
+        title="Comparación de métricas vs Mediana"
+    )
+    st.plotly_chart(fig, use_container_width=True)

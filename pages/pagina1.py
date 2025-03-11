@@ -2,8 +2,9 @@ import streamlit as st
 import common.menu as menu
 import pandas as pd
 import os
-from common.functions import crear_tablas
+from common.functions import crear_tablas, grafica_metricas_comparacion
 from sqlalchemy import create_engine
+import plotly.express as px
 
 # Configurar la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
 st.set_page_config(page_title="Stats") # Cambiamos nombre de la página
@@ -180,6 +181,16 @@ if "selected_season" in st.session_state:
             
         else:
             st.info("Por favor, selecciona equipos para ver los datos.")
+        
+        if len(selected_teams) > 0:
+            # Creamos dos columnas para mostrar las tablas en paralelo
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Ejemplo: mostrar la gráfica de comparación de métricas
+                st.subheader("Comparación de métricas vs Mediana")
+                metrics = ['Puntos', 'TCA', 'TCI', 'Ast']  # Define las métricas que deseas comparar
+                grafica_metricas_comparacion(df_sql_team, selected_teams, metrics)
 
         # Mostrar la tabla filtrada con los datos de los equipos seleccionados
         if len(selected_teams) > 0:

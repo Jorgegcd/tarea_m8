@@ -165,14 +165,22 @@ if "selected_season" in st.session_state:
             st.info("Por favor, selecciona equipos para ver los datos.")
         
         if len(selected_teams) > 0:
-            # Creamos dos columnas para mostrar las tablas en paralelo
+            # Creamos dos columnas para mostrar las gráficas en paralelo
             col1, col2 = st.columns(2)
             
             with col1:
-                # Ejemplo: mostrar la gráfica de comparación de métricas
-                st.subheader("Comparación de métricas vs Mediana")
-                metrics = ['Puntos', 'TCA', 'TCI', 'Ast']  # Define las métricas que deseas comparar
-                grafica_metricas_comparacion(df_sql_team, selected_teams, metrics)
+                 # Asumimos que la lista selected_teams respeta el orden de selección
+                equipo_left = selected_teams[0]
+                equipo_right = selected_teams[1]
+                
+                st.subheader("Comparación de métricas (Pirámide)")
+                # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
+                metrics = ["Puntos", "TCA", "TCI", "Ast"]  # Ajusta según tus necesidades
+                
+                # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                grafica_metricas_comparacion(df_sql_team, equipo_left, equipo_right, metrics)
+        else:
+            st.info("Selecciona exactamente 2 equipos para ver la gráfica en formato pirámide.")
 
         # Mostrar la tabla filtrada con los datos de los equipos seleccionados
         if len(selected_teams) > 0:

@@ -29,33 +29,34 @@ def crear_tablas(df):
     
     return tabla1, tabla2
 
-def grafica_metricas_comparacion(df, selected_teams, metrics):
+def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
     """
-    Genera una gráfica de barras horizontal que compara para cada métrica
-    los valores de los equipos seleccionados y la mediana de todos los equipos.
+    Genera una gráfica de barras horizontal estilo pirámide de población para comparar
+    dos equipos. Para cada métrica, los valores del equipo_left se muestran como negativos 
+    (a la izquierda) y los del equipo_right como positivos (a la derecha).
     
     Args:
-        df (DataFrame): DataFrame filtrado para la temporada seleccionada.
-        selected_teams (list): Lista de nombres de equipos seleccionados.
-        metrics (list): Lista de métricas (columnas numéricas) a comparar.
+        df (DataFrame): DataFrame obtenido de la consulta SQL (sin estilos).
+        equipo_left (str): Nombre del equipo que se mostrará a la izquierda.
+        equipo_right (str): Nombre del equipo que se mostrará a la derecha.
+        metrics (list): Lista de nombres de columnas (métricas) a comparar. Deben coincidir 
+                        exactamente con los alias de la consulta SQL.
     """
     rows = []
     for metric in metrics:
-        # Calcular la mediana de la métrica para todos los equipos en la temporada
-        median_val = df[metric].median()
-        # Agregar los valores para cada equipo seleccionado
-        for team in selected_teams:
-            try:
-                # Se asume que cada equipo tiene una única fila en df
-                team_val = df.loc[df['Equipo'] == team, metric].iloc[0]
-            except IndexError:
-                team_val = None
-            rows.append({"Métrica": metric, "Equipo": team, "Valor": team_val})
-        # Agregar la mediana
-        rows.append({"Métrica": metric, "Equipo": "Mediana", "Valor": median_val})
+        try:
+            left_val = df.loc[df['Equipo'] == equipo_left, metric].iloc[0]
+            right_val = df.loc[df['Equipo'] == equipo_right, metric].iloc[0]
+        except IndexError:
+            st.error(f"No se encontró la métrica '{metric}' para uno de los equipos.")
+            return
+        # Multiplicamos el valor del equipo de la izquierda por -1 para que se muestre a la izquierda
+        rows.append({"Métrica": metric, "Equipo": equipo_left, "Valor": -left_val})
+        rows.append({"Métrica": metric, "Equipo": equipo_right, "Valor": right_val})
     
     data_plot = pd.DataFrame(rows)
     
+    # Generamos la gráfica de barras horizontal
     fig = px.bar(
         data_plot,
         x="Valor",
@@ -63,6 +64,28 @@ def grafica_metricas_comparacion(df, selected_teams, metrics):
         color="Equipo",
         orientation="h",
         barmode="group",
-        title="Comparación de métricas vs Mediana"
+        title="Comparación de métricas entre equipos"
     )
+    
+    # Quitamos la leyenda
+    fig.update_layout(showlegend=False)
+    # Eliminamos los textos sobre las barras
+    fig.update_traces(texttemplate=None)
+
+    # Establecemos un rango simétrico para el eje x
+    max_val = data_plot['Valor'].abs().max()
+    fig.update_xaxes(range=[-max_val*1.1, max_val*1.1])
+    
+    # Agregamos una anotación en x=0 para cada métrica con el nombre de la misma, centrada
+    for metric in metrics:
+        fig.add_annotation(
+            x=0,
+            y=metric,
+            text=metric,
+            showarrow=False,
+            font=dict(size=12, color="black"),
+            xanchor="center",
+            yanchor="middle"
+        )
+    
     st.plotly_chart(fig, use_container_width=True)

@@ -140,7 +140,7 @@ if "selected_season" in st.session_state:
                 # Mostramos la tabla en Streamlit
                 st.dataframe(df_sql_team)
             with col2:
-                st.subheader("Promedios por partido rivales")
+                st.subheader("Promedios por partido de los rivales")
                 # Generamos un string con los nombres entre comillas, separados por coma
                 equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
                 query = f"""

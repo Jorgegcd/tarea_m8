@@ -58,7 +58,7 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
 
     # Determinamos un gap en el centro (puede ser un porcentaje del máximo valor)
     max_val = max(max(left_vals), max(right_vals))
-    gap = 0.2 * max_val  # ajustá este factor según la escala de tus datos
+    gap = 0.26 * max_val  # ajustá este factor según la escala de tus datos
     
     # Creamos la figura
     fig = go.Figure()
@@ -70,7 +70,9 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
         base=[-gap] * len(metrics),
         name=equipo_left,
         orientation='h',
-        marker_color='steelblue'
+        marker_color='steelblue',
+        customdata=left_vals,  # Pasamos los valores originales (positivos)
+        hovertemplate="%{y}: %{customdata:.2f}<extra></extra>"
     ))
     
     # Añadimos la barra para el equipo derecho
@@ -80,7 +82,8 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
         base=[gap] * len(metrics),
         name=equipo_right,
         orientation='h',
-        marker_color='tomato'
+        marker_color='tomato',
+        hovertemplate="%{y}: %{x:.2f}<extra></extra>"
     ))
     
     # Actualizamos el layout para que ambas trazas se superpongan (sin offset vertical)
@@ -97,6 +100,7 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
 
     # Ocultamos los tick labels del eje y para no duplicar los nombres de las métricas
     fig.update_yaxes(showticklabels=False)
+    fig.update_xaxes(showticklabels=False)
     
     # Añadimos una anotación centrada en x=0 para cada métrica (en el eje y)
     annotations = []

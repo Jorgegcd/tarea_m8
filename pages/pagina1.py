@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 import plotly.express as px
 
 # Configurar la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
-st.set_page_config(page_title="Stats") # Cambiamos nombre de la página
+st.set_page_config(page_title="Estadísticas equipos") # Cambiamos nombre de la página
 
 # Crea el engine de conexión a la base de datos MySQL
 engine = create_engine("mysql+pymysql://jgcornejo:Avellanas9?@localhost:3306/tarea_m8", echo=True)
@@ -93,16 +93,20 @@ if "selected_season" in st.session_state:
                     COUNT(m.match) AS "Partidos",
                     AVG(m.pts) AS "Puntos",
                     AVG(m.fg2m) AS "T2A",
-                    AVG(m.fga) AS "T2I",
+                    AVG(m.fg2a) AS "T2I",
+                    100*(AVG(m.fg2m) / AVG(m.fg2a)) AS "T2 Porc",
                     AVG(m.fg3m) AS "T3A",
                     AVG(m.fg3a) AS "T3I",
+                    100*(AVG(m.fg3m) / AVG(m.fg3a)) AS "T3 Porc",
                     AVG(m.fgm) AS "TCA",
                     AVG(m.fga) AS "TCI",
+                    100*(AVG(m.fgm) / AVG(m.fga)) AS "TC Porc",
                     AVG(m.ftm) AS "TLA",
                     AVG(m.fta) AS "TLI",
-                    AVG(m.or) AS "Reb. of.",
-                    AVG(m.dr) AS "Reb. def.",
-                    AVG(m.tr) AS "Reb. tot.",
+                    100*(AVG(m.ftm) / AVG(m.fta)) AS "TL Porc",
+                    AVG(m.or) AS "Reb of",
+                    AVG(m.dr) AS "Reb def",
+                    AVG(m.tr) AS "Reb tot",
                     AVG(m.ass) AS "Ast",
                     AVG(m.st) AS "Robos",
                     AVG(m.blk) AS "Tapones",
@@ -133,12 +137,16 @@ if "selected_season" in st.session_state:
                     AVG(m.pts_opp) AS "Puntos recibidos",
                     AVG(m.fg2m_opp) AS "T2A rival",
                     AVG(m.fga_opp) AS "T2I rival",
+                    100*(AVG(m.fg2m_opp) / AVG(m.fg2a_opp)) AS "T2 Porc rival",
                     AVG(m.fg3m_opp) AS "T3A rival",
                     AVG(m.fg3a_opp) AS "T3I rival",
+                    100*(AVG(m.fg3m_opp) / AVG(m.fg3a_opp)) AS "T3 Porc rival",
                     AVG(m.fgm_opp) AS "TCA rival",
                     AVG(m.fga_opp) AS "TCI rival",
+                    100*(AVG(m.fgm_opp) / AVG(m.fga_opp)) AS "TC Porc rival",
                     AVG(m.ftm_opp) AS "TLA rival",
                     AVG(m.fta_opp) AS "TLI rival",
+                    100*(AVG(m.ftm_opp) / AVG(m.fta_opp)) AS "TL Porc rival",
                     AVG(m.or_opp) AS "Reb of rival",
                     AVG(m.dr_opp) AS "Reb def rival",
                     AVG(m.tr_opp) AS "Reb tot rival",
@@ -178,7 +186,7 @@ if "selected_season" in st.session_state:
                 equipo_right = selected_teams[1]
                 
                 # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
-                metrics = ["Puntos", "TCA", "TCI", "Ast"]  # Ajusta según tus necesidades
+                metrics = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
                 
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
                 grafica_metricas_comparacion(df_sql_team, equipo_left, equipo_right, metrics)
@@ -189,7 +197,8 @@ if "selected_season" in st.session_state:
                 equipo_right = selected_teams[1]
                 
                 # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
-                metrics = ["Puntos recibidos", "Reb tot rival", "TCI rival", "Ast rival"]  # Ajusta según tus necesidades
+                metrics = ["Puntos recibidos", "T2 Porc rival", "T3 Porc rival", "TC Porc rival", "TL Porc rival", "Reb of rival",
+                           "Reb def rival", "Ast rival", "Robos rival", "Tapones rival", "Pérdidas rival"]  # Ajusta según tus necesidades
                 
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
                 grafica_metricas_comparacion(df_sql_opp, equipo_left, equipo_right, metrics)

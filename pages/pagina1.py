@@ -2,7 +2,7 @@ import streamlit as st
 import common.menu as menu
 import pandas as pd
 import os
-from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_metricas_un_equipo
+from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo
 from sqlalchemy import create_engine
 import plotly.express as px
 
@@ -169,28 +169,23 @@ if "selected_season" in st.session_state:
                 # Mostramos la tabla en Streamlit
                 st.dataframe(styled_sql_opp)
             
-        else:
-            st.info("Por favor, selecciona equipos para ver los datos.")
-        
-        # Mostramos gráfica de resultados del primer equipo
-        st.markdown(f"<h3 style='text-align: center;'>Desarrollo competición {selected_teams[0]}</h3>", unsafe_allow_html=True)
 
-        # Mostramos gráfica de resultados del segundo equipo
-        st.markdown(f"<h3 style='text-align: center;'>Desarrollo competición {selected_teams[1]}</h3>", unsafe_allow_html=True)
+        if len(selected_teams) == 2:
+            st.markdown(f"<h3 style='text-align: center;'>Avance equipo {selected_teams[0]} en liga</h3>", unsafe_allow_html=True)
+            st.markdown(f"<h3 style='text-align: center;'>Avance equipo {selected_teams[1]} en liga</h3>", unsafe_allow_html=True)
         
-        # Mostramos título de sección centrado
-        st.markdown("<h3 style='text-align: center;'>Comparación de valores promedio de equipos y producidos por rivales</h3>", unsafe_allow_html=True)
-
+        elif len(selected_teams) == 1:
+            st.markdown(f"<h3 style='text-align: center;'>Avance equipo {selected_teams[0]} en liga</h3>", unsafe_allow_html=True)
+        
         if len(selected_teams) == 2:
             # Creamos dos columnas para mostrar las gráficas en paralelo
             col1, col2 = st.columns(2)
+
+            # Asumimos que la lista selected_teams respeta el orden de selección
+            equipo_left = selected_teams[0]
+            equipo_right = selected_teams[1]
             
             with col1:
-                
-                # Asumimos que la lista selected_teams respeta el orden de selección
-                equipo_left = selected_teams[0]
-                equipo_right = selected_teams[1]
-                
                 # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
                 metrics = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
                 
@@ -198,10 +193,6 @@ if "selected_season" in st.session_state:
                 grafica_metricas_comparacion(df_sql_team, equipo_left, equipo_right, metrics)
             
             with col2:
-                 # Asumimos que la lista selected_teams respeta el orden de selección
-                equipo_left = selected_teams[0]
-                equipo_right = selected_teams[1]
-                
                 # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
                 metrics = ["Puntos recibidos", "T2 Porc rival", "T3 Porc rival", "TC Porc rival", "TL Porc rival", "Reb of rival",
                            "Reb def rival", "Ast rival", "Robos rival", "Tapones rival", "Pérdidas rival"]  # Ajusta según tus necesidades
@@ -210,16 +201,30 @@ if "selected_season" in st.session_state:
                 grafica_metricas_comparacion(df_sql_opp, equipo_left, equipo_right, metrics)
         
         elif len(selected_teams) == 1:
-            # Si se selecciona un único equipo, mostramos la gráfica de pirámide comparativa vs la mediana global
+
+            # Creamos dos columnas para mostrar las gráficas en paralelo
+            col1, col2 = st.columns(2)
+
+            # Asumimos que la lista selected_teams respeta el orden de selección
             equipo = selected_teams[0]
-            st.markdown(f"<h3 style='text-align: center;'>Desarrollo competición {equipo}</h3>", unsafe_allow_html=True)
-            # Define las métricas a comparar (asegúrate de que coincidan con los alias en df_sql_team y global_df)
-            metrics = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
-            # Para el global, usamos df_temporada (o cualquier DataFrame que contenga los datos de todos los equipos de la temporada)
-            grafica_metricas_un_equipo(df_sql_team, df_temporada, equipo, metrics)
+
+            with col1:
+                st.markdown("<h3 style='text-align: center;'>Estadísticas avanzadas ataque</h3>", unsafe_allow_html=True)
+                # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
+                metrics = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
                 
-        else:
-            st.info("Selecciona al menos 1 equipo para ver las gráficas.")
+                # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                grafica_piramide_equipo(df_sql_team, equipo, metrics)
+            
+            with col2:
+                st.markdown("<h3 style='text-align: center;'>Estadísticas avanzadas ataque</h3>", unsafe_allow_html=True)
+                # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
+                metrics = ["Puntos recibidos", "T2 Porc rival", "T3 Porc rival", "TC Porc rival", "TL Porc rival", "Reb of rival",
+                           "Reb def rival", "Ast rival", "Robos rival", "Tapones rival", "Pérdidas rival"]  # Ajusta según tus necesidades
+                
+                # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                grafica_piramide_equipo(df_sql_opp, equipo, metrics)
+
 
         # Mostrar la tabla filtrada con los datos de los equipos seleccionados
         if len(selected_teams) > 0:

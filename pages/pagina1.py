@@ -18,7 +18,7 @@ if 'usuario' in st.session_state:
 else:
     st.write("Por favor, inicia sesión para ver el menú.")
 
-st.markdown("<h1 style='text-align: center;'>Comparador de estadísticas equipos ABA League 2</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Comparador de equipos ABA League 2</h1>", unsafe_allow_html=True)
 
 # Leemos el CSV de advanced data (ajusta la ruta según corresponda)
 df = pd.read_csv("data/advanced_data.csv")

@@ -2,7 +2,7 @@ import streamlit as st
 import common.menu as menu
 import pandas as pd
 import os
-from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo
+from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo, grafica_donut_posesiones
 from sqlalchemy import create_engine
 import plotly.express as px
 
@@ -201,7 +201,6 @@ if "selected_season" in st.session_state:
                 grafica_metricas_comparacion(df_sql_opp, equipo_left, equipo_right, metrics)
         
         elif len(selected_teams) == 1:
-
             # Creamos dos columnas para mostrar las gráficas en paralelo
             col1, col2 = st.columns(2)
 
@@ -251,3 +250,70 @@ if "selected_season" in st.session_state:
                 formato = {col: "{:.2f}" for col in numeric_cols}
                 styled_tabla_defensa = tabla_defensa.style.format(formato)
                 st.dataframe(styled_tabla_defensa)
+        
+        # Realizamos las gráficas comparación de eficiencia defensiva y ofensiva
+        if len(selected_teams) > 0:
+            st.markdown("<h3 style='text-align: center;'>Eficiencia ofensiva vs eficiencia defensiva</h3>", unsafe_allow_html=True)
+            # Posteriormente dividimos en 3 columnas para mostrar gráficos diversos
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                if len(selected_teams) == 2:
+                    # Asumimos que la lista selected_teams respeta el orden de selección
+                    equipo_left = selected_teams[0]
+                    equipo_right = selected_teams[1]
+                    st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones {equipo_left}</h3>", unsafe_allow_html=True)
+                    posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
+                    # Por ejemplo, si querés asignar colores específicos:
+                    colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
+                    grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores = colores_azules)
+                    
+                    st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones de los rivales de {equipo_left}</h3>", unsafe_allow_html=True)
+                    posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
+                    grafica_donut_posesiones(df_sql_opp, equipo_left, posesiones_rival, colores = colores_azules)
+
+                elif len(selected_teams) == 1:
+                    equipo = selected_teams[0]
+                    st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones {equipo}</h3>", unsafe_allow_html=True)
+                    posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
+                    # Por ejemplo, si querés asignar colores específicos:
+                    colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
+                    grafica_donut_posesiones(df_sql_team, equipo, posesiones_equipo, colores = colores_azules)
+
+            with col2:
+                if len(selected_teams) == 2:
+                    # Asumimos que la lista selected_teams respeta el orden de selección
+                    equipo_left = selected_teams[0]
+                    equipo_right = selected_teams[1]
+                    st.markdown("<h3 style='text-align: center;'>Comparación estadísticas avanzadas equipo</h3>", unsafe_allow_html=True)
+
+                    st.markdown("<h3 style='text-align: center;'>Comparación estadísticas avanzadas rivales</h3>", unsafe_allow_html=True)
+
+
+                elif len(selected_teams) == 1:
+                    equipo = selected_teams[0]
+                    st.markdown("<h3 style='text-align: center;'>Estadísticas equipo</h3>", unsafe_allow_html=True)
+
+                    st.markdown("<h3 style='text-align: center;'>Estadísticas rivales</h3>", unsafe_allow_html=True)
+
+            
+            with col3:
+                if len(selected_teams) == 2:
+                    # Asumimos que la lista selected_teams respeta el orden de selección
+                    equipo_left = selected_teams[0]
+                    equipo_right = selected_teams[1]
+                    st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones {equipo_right}</h3>", unsafe_allow_html=True)
+                    posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
+                    # Por ejemplo, si querés asignar colores específicos:
+                    colores_rojos = ["tomato", "red", "#b11f1f", "#f88686"]
+                    grafica_donut_posesiones(df_sql_team, equipo_right, posesiones_equipo, colores = colores_rojos)
+
+                    st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones de los rivales de {equipo_right}</h3>", unsafe_allow_html=True)
+                    posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
+                    grafica_donut_posesiones(df_sql_opp, equipo_right, posesiones_rival, colores = colores_rojos)
+
+                elif len(selected_teams) == 1:
+                    equipo = selected_teams[0]
+                    st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones de los rivales de {equipo}</h3>", unsafe_allow_html=True)
+                    colores_rojos = ["tomato", "red", "#b11f1f", "#f88686"]
+                    posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
+                    grafica_donut_posesiones(df_sql_opp, equipo, posesiones_rival, colores = colores_rojos)

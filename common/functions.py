@@ -3,6 +3,7 @@ import plotly.express as px
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
+import base64
 
 # Supongamos que "df" es tu DataFrame original
 def crear_tablas(df):
@@ -196,7 +197,7 @@ def grafica_piramide_equipo(df, equipo, metrics):
         annotations.append(dict(
             x=0,
             y=metric,
-            text=metric,
+            text=f"{left_vals[i]:.2f}",
             showarrow=False,
             font=dict(size=12),
             xanchor="center",
@@ -216,4 +217,73 @@ def grafica_piramide_equipo(df, equipo, metrics):
 
     fig.update_layout(annotations=annotations)
     
+    st.plotly_chart(fig, use_container_width=True)
+
+# Creamos un donut chart con la distribución de posesiones.
+def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = None):
+    
+    # Filtrar el DataFrame para el equipo deseado, por ejemplo, "Lakers"
+    df_equipo = df[df["Equipo"] == equipo]
+    # Tomamos la primera fila (suponiendo que es el dato que queremos graficar)
+    row = df_equipo.iloc[0]
+
+    # Extraemos los valores correspondientes
+    data = {cat: row[cat] for cat in categorias}
+
+    # Agregar la métrica derivada de tiro libre (Pos. Tiro Libre = 0.44 * TL Intentados)
+    if "TLI" in row:
+        tl_val = data.pop("TLI")
+        data["TLI"] = 0.44 * tl_val
+    
+    elif "TLI rival" in row:
+        tl_rival_val = data.pop("TLI rival")
+        data["TLI rival"] = 0.44 * tl_rival_val
+
+    else:
+        st.error("No se encontró la columna 'TL Intentados' para calcular la posesión por tiro libre.")
+        return
+    
+    # Si los datos son cantidades y queremos porcentajes, los convertimos.
+    total = sum(data.values())
+    if total != 0:
+        data = {cat: (valor / total) * 100 for cat, valor in data.items()}
+    
+    # Convertimos el diccionario a un DataFrame
+    donut_df = pd.DataFrame(list(data.items()), columns=["Categoría", "Valor"])
+    
+    # Crear el gráfico de rosquilla (donut) con Plotly Express
+    fig = px.pie(
+        donut_df,
+        names="Categoría",
+        values="Valor",
+        hole=0.5,  # Esto crea el efecto de donut
+        color_discrete_sequence=colores
+    )
+    
+    # Configurar el texto del hover y dentro del gráfico para mostrar porcentajes y etiquetas
+    fig.update_traces(textposition='inside', textinfo='percent+label', hovertemplate="%{label}: %{value:.2f}<extra></extra>")
+
+    # Eliminar la leyenda
+    fig.update_layout(showlegend=False)
+    
+    # Si se ha pasado la ruta del logo, lo añadimos en el centro
+    if logo_path:
+        try:
+            with open(logo_path, "rb") as image_file:
+                encoded_logo = base64.b64encode(image_file.read()).decode()
+            fig.add_layout_image(
+                dict(
+                    source="data:image/png;base64," + encoded_logo,
+                    xref="paper", yref="paper",
+                    x=0.5, y=0.5,
+                    sizex=0.3, sizey=0.3,  # Ajustá estos valores según el tamaño deseado
+                    xanchor="center", yanchor="middle",
+                    layer="above"
+                )
+            )
+        except Exception as e:
+            st.error(f"Error al cargar el logo: {e}")
+    
+    
+    # Mostrar la gráfica en Streamlit
     st.plotly_chart(fig, use_container_width=True)

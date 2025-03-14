@@ -1,11 +1,11 @@
 import streamlit as st
 import common.login as login
 
-st.header('Página principal')
+st.header('Comparador ABA League 2')
 login.generarLogin()
 
 if 'usuario' in st.session_state:
-    st.subheader('Información página principal')
+    st.subheader('Página principal')
 
     col1, col2 = st.columns(2)
     

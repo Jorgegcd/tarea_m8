@@ -276,7 +276,7 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
                     source="data:image/png;base64," + encoded_logo,
                     xref="paper", yref="paper",
                     x=0.5, y=0.5,
-                    sizex=0.3, sizey=0.3,  # Ajustá estos valores según el tamaño deseado
+                    sizex=0.3, sizey=0.3,
                     xanchor="center", yanchor="middle",
                     layer="above"
                 )
@@ -289,16 +289,16 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
     st.plotly_chart(fig, use_container_width=True)
 
 # Generamos una función para el radar comparativo
-def grafica_radar_comparativo(df_selected, df_global, teams, metrics):
+def grafica_radar_comparativo(df_selected, df, teams, metrics):
     
     fig = go.Figure()
     
     # Para cada equipo seleccionado, extraemos sus valores para las métricas
     for team in teams:
         # Se asume que cada equipo aparece una sola vez en df_selected.
-        team_data = df_selected[df_selected["Equipo"] == team].iloc[0]
+        team_data = df_selected[df_selected["team_name"] == team].iloc[0]
         values = [team_data[m] for m in metrics]
-        # Cerramos el polígono (se repite el primer valor)
+        # Cerramos el polígono
         values += [values[0]]
         theta = metrics + [metrics[0]]
         
@@ -308,34 +308,44 @@ def grafica_radar_comparativo(df_selected, df_global, teams, metrics):
             fill='toself',
             name=team
         ))
-    
-    # Calcular la mediana global para cada métrica (a partir del DataFrame global)
-    median_values = [df_global[m].median() for m in metrics]
+
+    # Calcular la mediana global para cada métrica
+    median_values = [df[m].median() for m in metrics]
     median_values += [median_values[0]]
     theta = metrics + [metrics[0]]
-    
+
     fig.add_trace(go.Scatterpolar(
         r=median_values,
         theta=theta,
         fill='toself',
-        name='Mediana Global',
+        name='Mediana',
         line=dict(dash='dash')
     ))
+    
+    # Calculamos el máximo para definir el rango radial
+    max_range = max(
+        max([max(df_selected[m]) for m in metrics]),
+        max([max(df[m]) for m in metrics])
+    )
     
     # Actualizar el layout del gráfico
     fig.update_layout(
         polar=dict(
+            domain=dict(x=[0,1], y=[0, 1]),
             radialaxis=dict(
                 visible=True,
-                # Puedes fijar un rango si lo deseas: e.g., range=[0, max_value]
+                range=[0, max_range] # Fijamos rango
             )
         ),
         showlegend=True,
-        legend = dict(
-            orientation='h',
-            yanchor='bottom',
+        width = 415,
+        height = 415,
+        margin=dict(l=50, r=50, t=50, b=35),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
             y=-0.2,
-            xanchor='center',
+            xanchor="center",
             x=0.5
         )
     )

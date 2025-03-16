@@ -284,15 +284,17 @@ if "selected_season" in st.session_state:
                     # Asumimos que la lista selected_teams respeta el orden de selección
                     equipo_left = selected_teams[0]
                     equipo_right = selected_teams[1]
-                    st.markdown("<h3 style='text-align: center;'>Comparación estadísticas avanzadas equipo</h3>", unsafe_allow_html=True)
-                    # Asumimos que la lista selected_teams respeta el orden de selección
-                    posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
-                    teams = [equipo_left, equipo_right]
-                    grafica_radar_comparativo(df_sql_team, df_sql_team, teams, metrics = posesiones_equipo)
+                    st.markdown("<h3 style='text-align: center;'>Comparación estadísticas avanzadas equipo en ataque</h3>", unsafe_allow_html=True)
+                    df_selected = df_temporada[df_temporada['team_name'].isin(selected_teams)]
                     
-                    st.markdown("<h3 style='text-align: center;'>Comparación estadísticas avanzadas rivales</h3>", unsafe_allow_html=True)
-                    posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
-                    grafica_radar_comparativo(df_sql_opp, df_sql_opp, teams, metrics = posesiones_rival)
+                    # Asumimos que la lista selected_teams respeta el orden de selección
+                    est_ataque = ['ortg', 'efg%', 'or%', 'ts%']
+                    teams = [equipo_left, equipo_right]
+                    grafica_radar_comparativo(df_selected, df_temporada, teams, metrics = est_ataque)
+                    
+                    st.markdown("<h3 style='text-align: center;'>Comparación estadísticas avanzadas equipo en defensa</h3>", unsafe_allow_html=True)
+                    est_defensa = ['drtg', 'dr%', 'ts%_opp', 'ast%_opp']
+                    grafica_radar_comparativo(df_selected, df_temporada, teams, metrics = est_defensa)
 
 
                 elif len(selected_teams) == 1:

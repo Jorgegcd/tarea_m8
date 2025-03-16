@@ -34,16 +34,9 @@ def crear_tablas(df):
 
 def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
     """
-    Genera una gráfica estilo pirámide de población para comparar dos equipos.
-    Los valores del equipo_left se muestran como negativos (a la izquierda) y los
-    del equipo_right como positivos (a la derecha). Se añaden anotaciones centradas
-    en x=0 con el nombre de cada métrica.
-    
-    Args:
-        df (DataFrame): DataFrame crudo obtenido de la consulta SQL, con columna "Equipo".
-        equipo_left (str): Nombre del equipo que se mostrará a la izquierda (primer seleccionado).
-        equipo_right (str): Nombre del equipo que se mostrará a la derecha (segundo seleccionado).
-        metrics (list): Lista de métricas (cuyos alias deben coincidir con los de df) a comparar.
+    Genera una gráfica estilo pirámide de población para comparar equipos.
+    Los valores del equipo_left se muestran como negativos y los del equipo_right como positivos.
+    Se añaden anotaciones en x=0 con el nombre de cada métrica y sus valores.
     """
     left_vals = []
     right_vals = []
@@ -87,12 +80,6 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
         marker_color='tomato',
         hovertemplate="%{y}: %{x:.2f}<extra></extra>"
     ))
-    
-    # Actualizamos el layout para que ambas trazas se superpongan
-    fig.update_layout(
-        barmode='overlay',
-        showlegend=True,  # Mostramos leyenda
-    )
     
     # Configuramos un rango simétrico para el eje x considerando el gap
     left_max = gap + max(left_vals)
@@ -138,13 +125,18 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
             xanchor="left",
             yanchor="middle"
         ))
+    
+    fig.update_layout(annotations=annotations,
+                      barmode='overlay',
+                      showlegend=True,
+                      legend=dict(orientation='h', yanchor='bottom', y=-0.2, xanchor='center', x=0.5)
+                      )
 
     fig.update_layout(annotations=annotations)
     
     st.plotly_chart(fig, use_container_width=True)
 
 def grafica_piramide_equipo(df, equipo, metrics):
-    
     left_vals = []
     
     # Recorremos cada métrica y extraemos los valores para cada equipo
@@ -154,7 +146,7 @@ def grafica_piramide_equipo(df, equipo, metrics):
         except IndexError:
             st.error(f"No se encontró la métrica '{metric}' para uno de los equipos.")
             return
-        left_vals.append(left_val)  # Multiplicamos por -1 para que aparezca a la izquierda
+        left_vals.append(left_val) 
 
     # Determinamos un gap en el centro (puede ser un porcentaje del máximo valor)
     max_val = max(left_vals)
@@ -178,7 +170,7 @@ def grafica_piramide_equipo(df, equipo, metrics):
     # Actualizamos el layout para que ambas trazas se superpongan (sin offset vertical)
     fig.update_layout(
         barmode='overlay',
-        showlegend=True,  # Mostramos leyenda
+        showlegend=True
     )
     
     # Configuramos un rango simétrico para el eje x considerando el gap
@@ -261,10 +253,16 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
     )
     
     # Configurar el texto del hover y dentro del gráfico para mostrar porcentajes y etiquetas
-    fig.update_traces(textposition='inside', textinfo='percent+label', hovertemplate="%{label}: %{value:.2f}<extra></extra>")
+    fig.update_traces(textposition='inside',
+                      textinfo='percent+label',
+                      hovertemplate="%{label}: %{value:.2f}<extra></extra>")
 
     # Eliminar la leyenda
-    fig.update_layout(showlegend=False)
+    fig.update_layout(showlegend=False,
+                      margin=dict(l=50, r=50, t=35, b=35),)
+    
+    # Fijamos el dominio para que el donut siempre tenga centro (0.5,0.5) y dimensiones fijas.
+    fig.update_traces(domain={'x': [0.05, 0.95], 'y': [0.05, 0.95]})
     
     # Si se ha pasado la ruta del logo, lo añadimos en el centro
     if logo_path:
@@ -284,7 +282,6 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
         except Exception as e:
             st.error(f"Error al cargar el logo: {e}")
     
-    
     # Mostrar la gráfica en Streamlit
     st.plotly_chart(fig, use_container_width=True)
 
@@ -292,21 +289,48 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
 def grafica_radar_comparativo(df_selected, df, teams, metrics):
     
     fig = go.Figure()
+
+    # Si se tienen 2 equipos, asignamos colores fijos
+    colors = ['steelblue', 'tomato'] if len(teams) == 2 else None
     
     # Para cada equipo seleccionado, extraemos sus valores para las métricas
-    for team in teams:
-        # Se asume que cada equipo aparece una sola vez en df_selected.
-        team_data = df_selected[df_selected["team_name"] == team].iloc[0]
+    for idx, team in enumerate(teams):
+        try:
+            team_data = df_selected[df_selected["team_name"] == team].iloc[0]
+        except IndexError:
+            st.error(f"No se encontraron datos para el equipo {team} en df_selected.")
+            return
         values = [team_data[m] for m in metrics]
         # Cerramos el polígono
-        values += [values[0]]
+        values_closed = values + [values[0]]
         theta = metrics + [metrics[0]]
+
+        # Si tenemos dos equipos, usamos colores fijos; de lo contrario, dejamos la paleta por defecto.
+        color = colors[idx] if colors else None
+
+         # Si hay 2 equipos, asignamos posiciones y colores específicos:
+        if len(teams) == 2:
+            if idx == 0:
+                textpos = "top center"
+                textcolor = "steelblue"
+            else:
+                textpos = "bottom center"
+                textcolor = "tomato"
+        else:
+            textpos = "middle left"
+            textcolor = None
         
         fig.add_trace(go.Scatterpolar(
             r=values,
             theta=theta,
             fill='toself',
-            name=team
+            name=team,
+            mode="lines+markers+text",
+            text=[f"{v:.2f}" for v in values_closed],
+            textposition=textpos,
+            textfont=dict(color=textcolor) if textcolor else None,
+            marker_color=color,
+            hovertemplate = "Equipo: %{fullData.name}<br>Métrica: %{theta}<br>Valor: %{r:.2f}<extra></extra>"
         ))
 
     # Calcular la mediana global para cada métrica
@@ -317,9 +341,10 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics):
     fig.add_trace(go.Scatterpolar(
         r=median_values,
         theta=theta,
-        fill='toself',
+        fill='none',
         name='Mediana',
-        line=dict(dash='dash')
+        line=dict(dash='dash', color='grey'),
+        hovertemplate = "Mediana: <br>Métrica: %{theta}<br>Valor: %{r:.2f}<extra></extra>"
     ))
     
     # Calculamos el máximo para definir el rango radial
@@ -331,16 +356,17 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics):
     # Actualizar el layout del gráfico
     fig.update_layout(
         polar=dict(
-            domain=dict(x=[0,1], y=[0, 1]),
+            domain=dict(x=[0,1], y=[0.05, 0.951]),
             radialaxis=dict(
                 visible=True,
-                range=[0, max_range] # Fijamos rango
+                range=[0, max_range], # Fijamos rango
+                showticklabels = False,
+                showline = False,
+                ticks="",
             )
         ),
         showlegend=True,
-        width = 415,
-        height = 415,
-        margin=dict(l=50, r=50, t=50, b=35),
+        margin=dict(l=50, r=50, t=35, b=10),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -349,5 +375,11 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics):
             x=0.5
         )
     )
+
+    # Reordenamos los trazos para que la traza de "Mediana" se dibuje por encima.
+    median_trace = [trace for trace in fig.data if trace.name == "Mediana"]
+    other_traces = [trace for trace in fig.data if trace.name != "Mediana"]
+    fig.data = other_traces + median_trace
     
     st.plotly_chart(fig, use_container_width=True)
+

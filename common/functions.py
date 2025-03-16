@@ -222,7 +222,7 @@ def grafica_piramide_equipo(df, equipo, metrics):
 # Creamos un donut chart con la distribución de posesiones.
 def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = None):
     
-    # Filtrar el DataFrame para el equipo deseado, por ejemplo, "Lakers"
+    # Filtrar el DataFrame para el equipo deseado
     df_equipo = df[df["Equipo"] == equipo]
     # Tomamos la primera fila (suponiendo que es el dato que queremos graficar)
     row = df_equipo.iloc[0]
@@ -286,4 +286,52 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
     
     
     # Mostrar la gráfica en Streamlit
+    st.plotly_chart(fig, use_container_width=True)
+
+# Generamos una función para el radar comparativo
+def grafica_radar_comparativo(df_selected, df_global, teams, metrics):
+    
+    fig = go.Figure()
+    
+    # Para cada equipo seleccionado, extraemos sus valores para las métricas
+    for team in teams:
+        # Se asume que cada equipo aparece una sola vez en df_selected.
+        team_data = df_selected[df_selected["Equipo"] == team].iloc[0]
+        values = [team_data[m] for m in metrics]
+        # Cerramos el polígono (se repite el primer valor)
+        values += [values[0]]
+        theta = metrics + [metrics[0]]
+        
+        fig.add_trace(go.Scatterpolar(
+            r=values,
+            theta=theta,
+            fill='toself',
+            name=team
+        ))
+    
+    # Calcular la mediana global para cada métrica (a partir del DataFrame global)
+    median_values = [df_global[m].median() for m in metrics]
+    median_values += [median_values[0]]
+    theta = metrics + [metrics[0]]
+    
+    fig.add_trace(go.Scatterpolar(
+        r=median_values,
+        theta=theta,
+        fill='toself',
+        name='Mediana Global',
+        line=dict(dash='dash')
+    ))
+    
+    # Actualizar el layout del gráfico
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                # Puedes fijar un rango si lo deseas: e.g., range=[0, max_value]
+            )
+        ),
+        showlegend=True,
+        title="Radar Chart Comparativo"
+    )
+    
     st.plotly_chart(fig, use_container_width=True)

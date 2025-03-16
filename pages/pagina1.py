@@ -2,7 +2,7 @@ import streamlit as st
 import common.menu as menu
 import pandas as pd
 import os
-from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo, grafica_donut_posesiones
+from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo, grafica_donut_posesiones, grafica_radar_comparativo
 from sqlalchemy import create_engine
 import plotly.express as px
 
@@ -285,8 +285,14 @@ if "selected_season" in st.session_state:
                     equipo_left = selected_teams[0]
                     equipo_right = selected_teams[1]
                     st.markdown("<h3 style='text-align: center;'>Comparación estadísticas avanzadas equipo</h3>", unsafe_allow_html=True)
-
+                    # Asumimos que la lista selected_teams respeta el orden de selección
+                    posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
+                    teams = [equipo_left, equipo_right]
+                    grafica_radar_comparativo(df_sql_team, df_sql_team, teams, metrics = posesiones_equipo)
+                    
                     st.markdown("<h3 style='text-align: center;'>Comparación estadísticas avanzadas rivales</h3>", unsafe_allow_html=True)
+                    posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
+                    grafica_radar_comparativo(df_sql_opp, df_sql_opp, teams, metrics = posesiones_rival)
 
 
                 elif len(selected_teams) == 1:

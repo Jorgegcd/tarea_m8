@@ -331,7 +331,13 @@ def grafica_radar_comparativo(df_selected, df_global, teams, metrics):
             )
         ),
         showlegend=True,
-        title="Radar Chart Comparativo"
+        legend = dict(
+            orientation='h',
+            yanchor='bottom',
+            y=-0.2,
+            xanchor='center',
+            x=0.5
+        )
     )
     
     st.plotly_chart(fig, use_container_width=True)

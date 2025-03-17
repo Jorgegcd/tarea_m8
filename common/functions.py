@@ -489,6 +489,36 @@ def scatter_eficiencia (df, selected_teams):
         xref="x", yref="y",
         line=dict(dash="dash", color = "grey")
     )
+   
+    # Agregamos las anotaciones en cada esquina con un tono de gris clarito.
+    fig.add_annotation(
+        x=x_max - 0.5 , y=y_max - 0.25,
+        text="Buen ataque/mala defensa",
+        showarrow=False,
+        font=dict(color="#c2c1c0", size=8),
+        xanchor="right", yanchor="top"
+    )
+    fig.add_annotation(
+        x=x_max -0.5, y=y_min +0.25,
+        text="Buen ataque/buena defensa",
+        showarrow=False,
+        font=dict(color="#c2c1c0", size=8),
+        xanchor="right", yanchor="bottom"
+    )
+    fig.add_annotation(
+        x=x_min + 0.5, y=y_max - 0.25,
+        text="Mal ataque/mala defensa",
+        showarrow=False,
+        font=dict(color="#c2c1c0", size=8),
+        xanchor="left", yanchor="top"
+    )
+    fig.add_annotation(
+        x=x_min +0.5, y=y_min -0.25,
+        text="Mal ataque/buena defensa",
+        showarrow=False,
+        font=dict(color="#c2c1c0", size=8),
+        xanchor="left", yanchor="bottom"
+    )
 
     # Quitar la leyenda
     fig.update_layout(showlegend=False)

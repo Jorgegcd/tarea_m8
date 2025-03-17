@@ -217,6 +217,12 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
     
     # Filtrar el DataFrame para el equipo deseado
     df_equipo = df[df["Equipo"] == equipo]
+
+    # Verificamos que exista la columna "team_id"
+    if "team_id" not in df_equipo.columns:
+        st.error("La columna 'team_id' no se encuentra en los datos. Asegúrese de incluirla en la consulta.")
+        return
+
     # Tomamos la primera fila (suponiendo que es el dato que queremos graficar)
     row = df_equipo.iloc[0]
 
@@ -258,7 +264,7 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
                       textinfo='percent+label',
                       hovertemplate="%{label}: %{value:.2f}<extra></extra>")
 
-    # Eliminar la leyenda
+    # Eliminar la leyenda y fijamos márgenes
     fig.update_layout(showlegend=False,
                       margin=dict(l=50, r=50, t=35, b=35),)
     
@@ -266,22 +272,27 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
     fig.update_traces(domain={'x': [0.05, 0.95], 'y': [0.05, 0.95]})
     
     # Si se ha pasado la ruta del logo, lo añadimos en el centro
-    if logo_path:
-        try:
-            with open(logo_path, "rb") as image_file:
-                encoded_logo = base64.b64encode(image_file.read()).decode()
-            fig.add_layout_image(
-                dict(
-                    source="data:image/png;base64," + encoded_logo,
-                    xref="paper", yref="paper",
-                    x=0.5, y=0.5,
-                    sizex=0.3, sizey=0.3,
-                    xanchor="center", yanchor="middle",
-                    layer="above"
-                )
+    if logo_path is None:
+        current_dir = os.getcwd()
+        team_id = row["team_id"]
+        logo_path = os.path.join(current_dir, "images", "teams", f"{team_id}.png")
+
+    # Ahora intentamos cargar el logo y añadirlo en el centro
+    try:
+        with open(logo_path, "rb") as image_file:
+            encoded_logo = base64.b64encode(image_file.read()).decode()
+        fig.add_layout_image(
+            dict(
+                source="data:image/png;base64," + encoded_logo,
+                xref="paper", yref="paper",
+                x=0.5, y=0.5,
+                sizex=0.2, sizey=0.2,
+                xanchor="center", yanchor="middle",
+                layer="above"
             )
-        except Exception as e:
-            st.error(f"Error al cargar el logo: {e}")
+        )
+    except Exception as e:
+        st.error(f"Error al cargar el logo: {e}")
     
     # Mostrar la gráfica en Streamlit
     st.plotly_chart(fig, use_container_width=True)

@@ -90,6 +90,7 @@ if "selected_season" in st.session_state:
                 query = f"""
                 SELECT 
                     t.team_name AS "Equipo",
+                    t.team_id AS "team_id",
                     COUNT(m.match) AS "Partidos",
                     AVG(m.pts) AS "Puntos",
                     AVG(m.fg2m) AS "T2A",
@@ -114,8 +115,8 @@ if "selected_season" in st.session_state:
                 FROM matches m
                 JOIN teams t ON m.team_id = t.team_id
                 WHERE t.team_name IN ({equipos_str}) AND m.season = '{temporada_seleccionada}'
-                GROUP BY t.team_name, m.season
-                ORDER BY t.team_name, m.season;
+                GROUP BY t.team_name, t.team_id, m.season
+                ORDER BY t.team_name, t.team_id, m.season;
                 """
 
                 # Ejecutamos la consulta y la leemos en un DataFrame
@@ -133,6 +134,7 @@ if "selected_season" in st.session_state:
                 query = f"""
                 SELECT 
                     t.team_name AS "Equipo",
+                    t.team_id AS "team_id",
                     COUNT(m.match) AS "Partidos",
                     AVG(m.pts_opp) AS "Puntos recibidos",
                     AVG(m.fg2m_opp) AS "T2A rival",
@@ -157,8 +159,8 @@ if "selected_season" in st.session_state:
                 FROM matches m
                 JOIN teams t ON m.team_id = t.team_id
                 WHERE t.team_name IN ({equipos_str}) AND m.season = '{temporada_seleccionada}'
-                GROUP BY t.team_name, m.season
-                ORDER BY t.team_name, m.season;
+                GROUP BY t.team_name, t.team_id, m.season
+                ORDER BY t.team_name, t.team_id, m.season;
                 """
 
                 # Ejecutamos la consulta y la leemos en un DataFrame
@@ -368,7 +370,7 @@ if "selected_season" in st.session_state:
                     # Asumimos que la lista selected_teams respeta el orden de selección
                     equipo_left = selected_teams[0]
                     equipo_right = selected_teams[1]
-                    st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones {equipo_right} </h3>", unsafe_allow_html=True)
+                    st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones rivales de {equipo_right} </h3>", unsafe_allow_html=True)
                         
                     posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
                     grafica_donut_posesiones(df_sql_opp, equipo_right, posesiones_rival, colores = colores_rojos)

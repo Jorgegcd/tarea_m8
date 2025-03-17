@@ -4,6 +4,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
 import base64
+import os
 
 # Supongamos que "df" es tu DataFrame original
 def crear_tablas(df):
@@ -383,3 +384,113 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics):
     
     st.plotly_chart(fig, use_container_width=True)
 
+# Generamos función para scatter de eficiencia
+def scatter_eficiencia (df, selected_teams):
+   
+   # Crear una copia para no modificar el DataFrame original
+    df_plot = df.copy()
+    
+    # Agregar columna "opacity": 1 si el equipo está en selected_teams, sino 0.3
+    df_plot['opacity'] = df_plot['team_name'].apply(lambda x: 1 if x in selected_teams else 0.3)
+   
+   # Creamos el scatterplot usando Plotly Express
+    fig = px.scatter(
+        df,
+        x="ortg",
+        y="drtg",
+        
+        labels={"ortg": "Eficiencia Ofensiva", "drtg": "Eficiencia Defensiva", "team_name":"Equipo"},
+        hover_data=["team_name", "drtg", "ortg"]
+    )
+    
+    # Actualizar los marcadores con opacidades individuales
+    fig.update_traces(marker=dict(opacity=0))
+    
+    # Ajustamos los ejes:
+    # y el eje y va de 95 hasta un poco más que el máximo de drtg. Además, invertimos el eje y.
+    x_min = 95
+    x_max = df["ortg"].max() * 1.02
+    y_min = 95
+    y_max = df["drtg"].max() * 1.02
+    fig.update_xaxes(range=[x_min, x_max], showgrid=False)
+    fig.update_yaxes(range=[y_min, y_max], showgrid=False, autorange="reversed")
+
+    # Añadimos un trace invisible que usaremos para el hover con información personalizada.
+    fig.add_trace(go.Scatter(
+        x=df["ortg"],
+        y=df["drtg"],
+        mode="markers",
+        marker=dict(opacity=0, size=20),
+        customdata=df[["team_name", "ortg", "drtg"]].values,
+        hovertemplate=(
+            "%{customdata[0]}<br>" +
+            "Eficiencia Ofensiva: %{customdata[1]:.2f}<br>" +
+            "Eficiencia Defensiva: %{customdata[2]:.3f}<extra></extra>"
+        )
+    ))
+    
+    # Calculamos un tamaño para los logos (por ejemplo, 5% del rango de cada eje)
+    x_range = df["ortg"].max() - df["ortg"].min()
+    y_range = df["drtg"].max() - df["drtg"].min()
+    sizex = x_range * 0.25
+    sizey = y_range * 0.25
+
+    # Obtenemos la ruta absoluta usando os.getcwd()
+    current_dir = os.getcwd()
+
+    for _, row in df_plot.iterrows():
+        team_id = row["team_id"]
+        
+        # Construimos la ruta absoluta: images está en la raíz (tarea_m8/images)
+        logo_path = os.path.join(current_dir, "images", "teams", f"{team_id}.png")
+
+        if os.path.exists(logo_path):
+            with open(logo_path, "rb") as image_file:
+                encoded_logo = base64.b64encode(image_file.read()).decode()
+            
+            # Usar la opacidad del equipo
+            logo_opacity = row["opacity"]
+
+            fig.add_layout_image(
+                dict(
+                    source="data:image/png;base64," + encoded_logo,
+                    x=row["ortg"],
+                    y=row["drtg"],
+                    xref="x",
+                    yref="y",
+                    sizex=sizex,
+                    sizey=sizey,
+                    xanchor="center",
+                    yanchor="middle",
+                    opacity = logo_opacity,
+                    layer="above"
+                )
+            )
+        else:
+            st.error(f"No se encontró la imagen: {logo_path}")
+        
+    # Calcular las medianas para agregar las líneas de referencia
+    median_x = df["ortg"].median()
+    median_y = df["drtg"].median()
+
+    # Añadir línea vertical en la mediana de ortg
+    fig.add_shape(
+        type="line",
+        x0=median_x, x1=median_x,
+        y0=y_min, y1=y_max,
+        xref="x", yref="y",
+        line=dict(dash="dash", color = "grey")
+    )
+    # Añadir línea horizontal en la mediana de drtg
+    fig.add_shape(
+        type="line",
+        x0=x_min, x1=x_max,
+        y0=median_y, y1=median_y,
+        xref="x", yref="y",
+        line=dict(dash="dash", color = "grey")
+    )
+
+    # Quitar la leyenda
+    fig.update_layout(showlegend=False)
+    
+    st.plotly_chart(fig, use_container_width=True)

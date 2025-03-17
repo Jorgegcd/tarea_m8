@@ -2,7 +2,7 @@ import streamlit as st
 import common.menu as menu
 import pandas as pd
 import os
-from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo, grafica_donut_posesiones, grafica_radar_comparativo
+from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo, grafica_donut_posesiones, grafica_radar_comparativo, scatter_eficiencia
 from sqlalchemy import create_engine
 import plotly.express as px
 
@@ -258,7 +258,7 @@ if "selected_season" in st.session_state:
         # Realizamos las gráficas comparación de eficiencia defensiva y ofensiva
         if len(selected_teams) > 0:
             st.markdown("<h3 style='text-align: center;'>Eficiencia ofensiva vs eficiencia defensiva</h3>", unsafe_allow_html=True)
-            
+            scatter_eficiencia(df_temporada, selected_teams)
             # Posteriormente dividimos en 3 columnas para mostrar gráficos diversos
             col1, col2, col3 = st.columns(3, vertical_alignment="top")
             

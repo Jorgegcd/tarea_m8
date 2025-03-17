@@ -288,12 +288,16 @@ if "selected_season" in st.session_state:
                     equipo_left = selected_teams[0]
                     equipo_right = selected_teams[1]
                     st.markdown("<h3 style='text-align: center;'>Comparación estadísticas avanzadas equipo en ataque</h3>", unsafe_allow_html=True)
-                    df_selected = df_temporada[df_temporada['team_name'].isin(selected_teams)]
+                    df_radar_ataque = df_temporada.copy()
+                    df_radar_ataque = df_radar_ataque.rename(columns = {'ortg':'Of. Rtg', 'efg%': 'eFG%', 'ts%':'TS%', 'ftr':'FT Rate','vol2p':'Vol. T2%',
+                                                                        'vol3p':'Vol. T3%', 'or%':'Of. Reb%', 'ast%':'Ast%', 'to%':'Pérdidas%',
+                                                                        'four_factors':'Four Factors'})
+                    df_selected = df_radar_ataque[df_radar_ataque['team_name'].isin(selected_teams)]
                     
                     # Asumimos que la lista selected_teams respeta el orden de selección
-                    est_ataque = ['ortg', 'efg%', 'or%', 'ts%']
+                    est_ataque = ['Of. Rtg', 'eFG%', 'TS%', 'FT Rate', 'Vol. T2%', 'Vol. T3%', 'Of. Reb%', 'Ast%', 'Pérdidas%', 'Four Factors']
                     teams = [equipo_left, equipo_right]
-                    grafica_radar_comparativo(df_selected, df_temporada, teams, metrics = est_ataque)
+                    grafica_radar_comparativo(df_selected, df_radar_ataque, teams, metrics = est_ataque)
 
                 elif len(selected_teams) == 1:
                     equipo_left = selected_teams[0]
@@ -340,8 +344,17 @@ if "selected_season" in st.session_state:
                     equipo_right = selected_teams[1]
                     
                     st.markdown(f"<h3 style='text-align: center;'>Comparación estadísticas avanzadas equipo en defensa</h3>", unsafe_allow_html=True)
-                    est_defensa = ['drtg', 'dr%', 'ts%_opp', 'ast%_opp']
-                    grafica_radar_comparativo(df_selected, df_temporada, teams, metrics = est_defensa)
+                    df_radar_defensa = df_temporada.copy()
+                    df_radar_defensa = df_radar_defensa.rename(columns = {'drtg':'Def. Rtg', 'dr%':'Def. Reb%', 'efg%_opp': 'eFG% Rivales', 'ts%_opp':'TS% Rivales',
+                                                                          'ftr_opp':'FT Rate Rivales','vol2p_opp':'Vol. T2% Rivales', 'vol3p_opp':'Vol. T3% Rivales',
+                                                                          'ast%_opp':'Ast% Rivales', 'to%_opp':'Pérdidas% Rivales', 'st%':'Robos%',
+                                                                          'four_factors_opp':'Four Factors Rivales'})
+                    
+                    df_selected = df_radar_defensa[df_radar_defensa['team_name'].isin(selected_teams)]
+                    est_defensa = ['Def. Rtg', 'Def. Reb%', 'eFG% Rivales', 'TS% Rivales', 'FT Rate Rivales', 'Vol. T2% Rivales', 'Vol. T3% Rivales', 'Ast% Rivales',
+                                   'Pérdidas% Rivales', 'Robos%', 'Four Factors Rivales']
+                    
+                    grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa)
 
 
                 elif len(selected_teams) == 1:

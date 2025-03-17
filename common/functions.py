@@ -432,8 +432,8 @@ def scatter_eficiencia (df, selected_teams):
     # Calculamos un tamaño para los logos (por ejemplo, 5% del rango de cada eje)
     x_range = df["ortg"].max() - df["ortg"].min()
     y_range = df["drtg"].max() - df["drtg"].min()
-    sizex = x_range * 0.25
-    sizey = y_range * 0.25
+    sizex = x_range * 0.15
+    sizey = y_range * 0.15
 
     # Obtenemos la ruta absoluta usando os.getcwd()
     current_dir = os.getcwd()
@@ -495,32 +495,32 @@ def scatter_eficiencia (df, selected_teams):
         x=x_max - 0.5 , y=y_max - 0.25,
         text="Buen ataque/mala defensa",
         showarrow=False,
-        font=dict(color="#c2c1c0", size=8),
+        font=dict(color="#c2c1c0", size=12),
         xanchor="right", yanchor="top"
     )
     fig.add_annotation(
         x=x_max -0.5, y=y_min +0.25,
         text="Buen ataque/buena defensa",
         showarrow=False,
-        font=dict(color="#c2c1c0", size=8),
+        font=dict(color="#c2c1c0", size=12),
         xanchor="right", yanchor="bottom"
     )
     fig.add_annotation(
         x=x_min + 0.5, y=y_max - 0.25,
         text="Mal ataque/mala defensa",
         showarrow=False,
-        font=dict(color="#c2c1c0", size=8),
+        font=dict(color="#c2c1c0", size=12),
         xanchor="left", yanchor="top"
     )
     fig.add_annotation(
         x=x_min +0.5, y=y_min -0.25,
         text="Mal ataque/buena defensa",
         showarrow=False,
-        font=dict(color="#c2c1c0", size=8),
+        font=dict(color="#c2c1c0", size=12),
         xanchor="left", yanchor="bottom"
     )
 
     # Quitar la leyenda
-    fig.update_layout(showlegend=False)
+    fig.update_layout(showlegend=False, width = 415, height = 830)
     
     st.plotly_chart(fig, use_container_width=True)

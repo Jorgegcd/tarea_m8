@@ -54,31 +54,32 @@ class PDF(FPDF):
                 self.cell(col_width, line_height, item_clean, 1, 0, 'C')
             self.ln()
 
-def generar_pdf(jugador, historico_jugador, radar_path, evolucion_path):
+def generar_pdf_pag1(page_title, selected_teams, radar_path):
     pdf = PDF()
     pdf.add_page()
 
-    # Título del jugador
+    # Título de la comparación
     pdf.set_font('Arial', 'B', 16)
-    nombre_clean = jugador["nombre"].encode('ascii', 'replace').decode()
-    pdf.cell(0, 10, nombre_clean, 0, 1, 'C')
+    title = page_title.encode('ascii', 'replace').decode()
+    pdf.cell(0, 10, title, 0, 1, 'C')
     pdf.ln(5)
+    
+    # LOGOS AMBOS EQUIPOS
 
     # Primera sección
-    pdf.set_font('Arial', 'B', 12)
+    pdf.set_font('Arial', 'B', 10)
     pdf.set_x(15)  # Alinear con las tablas
-    pdf.cell(0, 10, 'Informacion del Jugador', 0, 1, 'L')
+    pdf.cell(0, 10, 'Promedios por partido equipo', 0, 1, 'L')
+
+    pdf.set_font('Arial', 'B', 10)
+    pdf.set_x(-15)  # Alinear con las tablas
+    pdf.cell(0, 10, 'Promedios por partido de los rivales', 0, 1, 'L')
     
     # Tabla de información básica
-    info_headers = ['Caracteristica', 'Valor']
+    info_headers = ['Equipo',"Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
     info_data = [
-        ['Pais', jugador["pais"]],
-        ['Edad', f'{int(jugador["edad"])} anos'],
-        ['Posicion', jugador["posicion"]],
-        ['Club', jugador["club"]],
-        ['Altura', f'{int(jugador["altura"])} cm'],
-        ['Peso', f'{int(jugador["peso"])} kg'],
-        ['Valor', f'{jugador["valor_actual"]:.2f}M EUR']
+        [selected_teams[0], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [selected_teams[1], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     ]
     
     current_y = pdf.get_y()
@@ -109,8 +110,5 @@ def generar_pdf(jugador, historico_jugador, radar_path, evolucion_path):
     
     # Gráfico de evolución
     pdf.image(evolucion_path, x=120, y=current_y-10, w=80)
-    
-    # Marco decorativo para toda la página
-    pdf.rect(10, 10, 190, 277)
     
     return pdf

@@ -1,5 +1,6 @@
 import streamlit as st
 import common.login as login
+import os
 
 st.header('Comparador ABA League 2')
 login.generarLogin()
@@ -16,3 +17,4 @@ if 'usuario' in st.session_state:
     with col2:    
         if st.button("Estadisticas jugadores"):
             st.switch_page("pages/pagina2.py") # Ir a la página de estadísticas de jugadores
+    

@@ -5,6 +5,7 @@ import os
 from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo, grafica_donut_posesiones, grafica_radar_comparativo, scatter_eficiencia
 from sqlalchemy import create_engine
 import plotly.express as px
+import base64
 
 # Configurar la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
 st.set_page_config(page_title="Estadísticas equipos") # Cambiamos nombre de la página
@@ -61,23 +62,44 @@ if "selected_season" in st.session_state:
         if logos:
             if len(logos) == 1:
                 col = st.columns(1)
-                if os.path.exists(logos[0]):
-                    col[0].image(logos[0], width=150)
-                else:
-                    col[0].error(f"No se encontró la imagen: {logos[0]}")
+                with col[0]:
+                    if os.path.exists(logos[0]):
+                        with open(logos[0], "rb") as image_file:
+                            encoded_logo = base64.b64encode(image_file.read()).decode()
+                        st.markdown(
+                            f"""<div style="text-align:center;">
+                            <img src="data:image/png;base64,{encoded_logo}" width="150">
+                            </div>""",
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.error(f"No se encontró la imagen: {logos[0]}")
             elif len(logos) == 2:
-                # Creamos tres columnas: el primer logo en la primera y el segundo en la tercera.
-                cols = st.columns([1, 1, 1])
-                # Ubica el primer logo en la primera columna (más a la izquierda)
-                if os.path.exists(logos[0]):
-                    cols[0].image(logos[0], width=150)
-                else:
-                    cols[0].error(f"No se encontró la imagen: {logos[0]}")
-                # Ubica el segundo logo en la última columna (más a la derecha)
-                if os.path.exists(logos[1]):
-                    cols[2].image(logos[1], width=150)
-                else:
-                    cols[2].error(f"No se encontró la imagen: {logos[1]}")
+                cols = st.columns(2)
+                with cols[0]:
+                    if os.path.exists(logos[0]):
+                        with open(logos[0], "rb") as image_file:
+                            encoded_logo = base64.b64encode(image_file.read()).decode()
+                        st.markdown(
+                            f"""<div style="text-align:center;">
+                            <img src="data:image/png;base64,{encoded_logo}" width="150">
+                            </div>""",
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.error(f"No se encontró la imagen: {logos[0]}")
+                with cols[1]:
+                    if os.path.exists(logos[1]):
+                        with open(logos[1], "rb") as image_file:
+                            encoded_logo = base64.b64encode(image_file.read()).decode()
+                        st.markdown(
+                            f"""<div style="text-align:center;">
+                            <img src="data:image/png;base64,{encoded_logo}" width="150">
+                            </div>""",
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.error(f"No se encontró la imagen: {logos[1]}")
 
         if len(selected_teams) > 0:
             # Creamos dos columnas para mostrar las tablas en paralelo
@@ -170,17 +192,6 @@ if "selected_season" in st.session_state:
                 styled_sql_opp = df_sql_opp.style.format(formato)
                 # Mostramos la tabla en Streamlit
                 st.dataframe(styled_sql_opp)
-            
-
-        if len(selected_teams) == 2:
-            st.markdown(f"<h3 style='text-align: center;'>Avance equipo {selected_teams[0]} en liga</h3>", unsafe_allow_html=True)
-
-
-            st.markdown(f"<h3 style='text-align: center;'>Avance equipo {selected_teams[1]} en liga</h3>", unsafe_allow_html=True)
-        
-
-        elif len(selected_teams) == 1:
-            st.markdown(f"<h3 style='text-align: center;'>Avance equipo {selected_teams[0]} en liga</h3>", unsafe_allow_html=True)
         
         if len(selected_teams) == 2:
             # Creamos dos columnas para mostrar las gráficas en paralelo
@@ -196,6 +207,7 @@ if "selected_season" in st.session_state:
                 metrics = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
                 
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                st.markdown("<h3 style='text-align: center;'>Comparación promedios ataque</h3>", unsafe_allow_html=True)
                 grafica_metricas_comparacion(df_sql_team, equipo_left, equipo_right, metrics)
             
             with col2:
@@ -204,6 +216,7 @@ if "selected_season" in st.session_state:
                            "Reb def rival", "Ast rival", "Robos rival", "Tapones rival", "Pérdidas rival"]  # Ajusta según tus necesidades
                 
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                st.markdown("<h3 style='text-align: center;'>Comparación promedios defensa</h3>", unsafe_allow_html=True)
                 grafica_metricas_comparacion(df_sql_opp, equipo_left, equipo_right, metrics)
         
         elif len(selected_teams) == 1:
@@ -219,6 +232,7 @@ if "selected_season" in st.session_state:
                 metrics = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
                 
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                st.markdown("<h3 style='text-align: center;'>Promedios ataque</h3>", unsafe_allow_html=True)
                 grafica_piramide_equipo(df_sql_team, equipo, metrics)
             
             with col2:
@@ -228,6 +242,7 @@ if "selected_season" in st.session_state:
                            "Reb def rival", "Ast rival", "Robos rival", "Tapones rival", "Pérdidas rival"]  # Ajusta según tus necesidades
                 
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                st.markdown("<h3 style='text-align: center;'>Promedios defensa</h3>", unsafe_allow_html=True)
                 grafica_piramide_equipo(df_sql_opp, equipo, metrics)
 
 

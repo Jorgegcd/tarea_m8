@@ -130,7 +130,7 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
     fig.update_layout(annotations=annotations,
                       barmode='overlay',
                       showlegend=True,
-                      legend=dict(orientation='h', yanchor='bottom', y=-0.2, xanchor='center', x=0.5)
+                      legend=dict(orientation='h', yanchor='top', y=1.2, xanchor='center', x=0.5)
                       )
 
     fig.update_layout(annotations=annotations)

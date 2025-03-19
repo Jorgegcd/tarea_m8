@@ -108,7 +108,6 @@ def generar_pdf_pag1(page_title, selected_teams, radar_path):
     current_y = pdf.get_y()
     pdf.create_table(stats_headers, stats_data)
     
-    # Gráfico de evolución
-    pdf.image(evolucion_path, x=120, y=current_y-10, w=80)
+
     
     return pdf

@@ -3,6 +3,7 @@ import common.menu as menu
 import pandas as pd
 import os
 from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo, grafica_donut_posesiones, grafica_radar_comparativo, scatter_eficiencia
+from common.pdf_generator import generar_pdf_pag1
 from sqlalchemy import create_engine
 import plotly.express as px
 import base64
@@ -19,7 +20,9 @@ if 'usuario' in st.session_state:
 else:
     st.write("Por favor, inicia sesión para ver el menú.")
 
-st.markdown("<h1 style='text-align: center;'>Comparador de equipos ABA League 2</h1>", unsafe_allow_html=True)
+# Indicamos título de página
+page_title = 'Comparador de equipos ABA League 2'
+st.markdown(f"<h1 style='text-align: center;'>Comparador de equipos ABA League 2</h1>", unsafe_allow_html=True)
 
 # Leemos el CSV de advanced data (ajusta la ruta según corresponda)
 df = pd.read_csv("data/advanced_data.csv")
@@ -389,3 +392,10 @@ if "selected_season" in st.session_state:
                         
                     posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
                     grafica_donut_posesiones(df_sql_opp, equipo_right, posesiones_rival, colores = colores_rojos)
+            
+        st.button('Imprimir Página')
+            
+        with st.button("Generar PDF"):
+                radar_ataque = grafica_radar_comparativo(df_selected, df_radar_ataque, teams, metrics = est_ataque)
+                # Generamos PDF
+                generar_pdf_pag1(page_title, selected_teams, radar_ataque)

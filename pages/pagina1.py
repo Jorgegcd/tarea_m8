@@ -3,10 +3,11 @@ import common.menu as menu
 import pandas as pd
 import os
 from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo, grafica_donut_posesiones, grafica_radar_comparativo, scatter_eficiencia
-from common.pdf_generator import generar_pdf_pag1
+from common.pdf_generator import generate_pdf_pag1
 from sqlalchemy import create_engine
 import plotly.express as px
 import base64
+import streamlit.components.v1 as components
 
 # Configurar la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
 st.set_page_config(page_title="Estadísticas equipos") # Cambiamos nombre de la página
@@ -393,9 +394,11 @@ if "selected_season" in st.session_state:
                     posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
                     grafica_donut_posesiones(df_sql_opp, equipo_right, posesiones_rival, colores = colores_rojos)
             
-        st.button('Imprimir Página')
-            
-        with st.button("Generar PDF"):
-                radar_ataque = grafica_radar_comparativo(df_selected, df_radar_ataque, teams, metrics = est_ataque)
-                # Generamos PDF
-                generar_pdf_pag1(page_title, selected_teams, radar_ataque)
+        if len(selected_teams) > 0:
+            st.button('Imprimir Página')
+
+            if st.button("Generar PDF"):
+                
+                # Generar el PDF
+                pdf = generate_pdf_pag1(page_title = 'Comparador de equipos ABA League 2', selected_teams = selected_teams, df_temporada = df_temporada, df_sql_team = df_sql_team,
+                                        df_sql_opp = df_sql_opp, output_filename= 'data/test.pdf')

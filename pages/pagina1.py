@@ -401,4 +401,4 @@ if "selected_season" in st.session_state:
                 
                 # Generar el PDF
                 pdf = generate_pdf_pag1(page_title = 'Comparador de equipos ABA League 2', selected_teams = selected_teams, df_temporada = df_temporada, df_sql_team = df_sql_team,
-                                        df_sql_opp = df_sql_opp, output_filename= 'data/test.pdf')
+                                        df_sql_opp = df_sql_opp, tabla_ataque = tabla_ataque, tabla_defensa = tabla_defensa, output_filename= 'data/test.pdf')

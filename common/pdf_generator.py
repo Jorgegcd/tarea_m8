@@ -2,8 +2,10 @@ from fpdf import FPDF
 from datetime import datetime
 import os
 import base64
+import textwrap
+import math
 
-def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_sql_opp, output_filename = None):
+def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_sql_opp, tabla_ataque, tabla_defensa, output_filename = None):
     
     # Generamos el PDF vertical
     class PDF(FPDF):
@@ -11,10 +13,14 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
             super().__init__(unit='mm', format='A4')
             self.set_auto_page_break(auto=True, margin=20)
             # Obtenemos la ruta de la fuente
-            font_path = os.path.join(os.getcwd(), "fonts", "DejaVuSans.ttf")
+            font_path = os.path.join(os.path.dirname(__file__), "..", "fonts", "DejaVuSans.ttf")
             if os.path.exists(font_path):
                 # Agregamos la fuente con un alias, por ejemplo "DejaVu"
                 self.add_font("DejaVu", "", font_path, uni=True)
+                self.add_font("DejaVu", "B", font_path, uni=True)
+                self.myfont = "DejaVu"
+            else:
+                self.myfont = "Arial"  # Usamos Arial por defecto si la fuente no se encuentra.
             # Si la fuente no existe, se usará Arial por defecto.
 
         def header(self):
@@ -27,17 +33,16 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
                 self.image(header_path_right, 180, 5, 20, 10) # Logo Sports Data Campus a la derecha
             
             # Designamos la fuente que queremos: Arial 16
-            font_to_use = "DejaVu" if "DejaVu" in self.fonts else "Arial"
             self.set_text_color(67, 142, 189) # Color de la fuente
-            self.set_font(font_to_use, "", 16) # Tipo de fuente
+            self.set_font(self.myfont, "", 16) # Tipo de fuente
                 
             self.set_y(10)  # Posición vertical del texto
             self.set_x((self.w - self.get_string_width("Tarea Módulo 8:Página 1")) / 2)  # Centramos horizontalmente
             self.cell(55,3, "Tarea Módulo 8:Página 1", border=0, align="C")
 
-            # Designamos la fuente que queremos: Arial 16
+            # Designamos la fuente que queremos: Arial 8
             self.set_text_color(67, 142, 189) # Color de la fuente
-            self.set_font(font_to_use, "", 8) # Tipo de fuente
+            self.set_font(self.myfont, "", 8) # Tipo de fuente
                 
             self.set_y(10)  # Posición vertical del texto
             self.cell(55,3, "Jorge Gómez-Cornejo Díaz", border=0, align="L")    
@@ -55,7 +60,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
             # Imprimimos el número de página:
             self.cell(0, 28, f"Página {self.page_no()}", align="C")
 
-        def create_table(self, headers, data, col_width=None, line_height=6, margin_left=10):
+        def create_table(self, headers, data, col_width=None, line_height=6, margin_left=8):
             # Si existe 'team_id' en headers, la removemos y eliminamos la columna correspondiente de cada fila
             if "team_id" in headers:
                 idx = headers.index("team_id")
@@ -68,47 +73,68 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
             base_width = (self.w - 2 * self.l_margin) / (n + 0.5)
             widths = [2 * base_width] + [base_width] * (n - 1)
             
-            # Encabezados con fuente en negrita y tamaño 10
-            self.set_font('Arial', 'B', 8)
+            # Encabezados con fuente en negrita y tamaño 7
+            self.set_font(self.myfont, 'B', 7)
             self.set_x(margin_left)
+            # Envolvemos el texto de cada encabezado
+            header_lines = []  # Cada elemento es una lista de líneas para el header de esa columna
+            max_lines = 0
+            # Usamos "M" para estimar el ancho promedio de un caracter
+            avg_char_width = self.get_string_width("M")
             for i, header in enumerate(headers):
-                header_clean = header.encode('ascii', 'replace').decode()
-                self.cell(widths[i], line_height, header_clean, 1, 0, 'C')
-            self.ln()
+                max_chars = max(1, int(widths[i] / avg_char_width))
+                lines = textwrap.wrap(header, width=max_chars)
+                header_lines.append(lines)
+                if len(lines) > max_lines:
+                    max_lines = len(lines)
+            header_height = max_lines * line_height
+            y_start = self.get_y()
+            # Imprimimos cada celda de encabezado
+            for i, lines in enumerate(header_lines):
+                x_cell = margin_left + sum(widths[:i])
+                for j in range(max_lines):
+                    self.set_xy(x_cell, y_start + j * line_height)
+                    # Si la celda tiene menos líneas, se imprime vacío en las restantes
+                    cell_text = lines[j] if j < len(lines) else ""
+                    self.cell(widths[i], line_height, cell_text, border=0, align='C')
+            # Dibujamos los bordes para cada celda de encabezado
+            for i in range(n):
+                self.rect(margin_left + sum(widths[:i]), y_start, widths[i], header_height)
+            # Posicionamos el cursor justo al final de la cabecera, sin espacio extra
+            self.set_xy(margin_left, y_start + header_height)
             
-            # Datos con fuente normal y tamaño 8
-            self.set_font('Arial', '', 8)
+            # Datos con fuente normal y tamaño 7
+            self.set_font(self.myfont, '', 7)
             for row in data:
-                # Guardamos la posición inicial de la fila
-                x0 = self.get_x()
-                y0 = self.get_y()
-                
-                # Para la primera columna, usamos MultiCell para que ajuste el texto
-                first_item = row[0]
-                try:
-                    num = float(first_item)
-                    item_str = f"{num:.2f}"
-                except (ValueError, TypeError):
-                    item_str = str(first_item)
-                item_clean = item_str.encode('ascii', 'replace').decode()
-                
-                # Imprimimos la primera celda con MultiCell y un borde; MultiCell ajusta la altura según el contenido.
-                self.multi_cell(widths[0], line_height, item_clean, border=1, align='C')
-                new_y = self.get_y()  # Altura final después de la MultiCell
-                row_height = new_y - y0
-                
-                # Para las demás columnas, posicionamos el cursor en la misma línea (y0) y usamos Cell con la misma altura.
-                for i in range(1, n):
-                    self.set_xy(x0 + sum(widths[:i]), y0)
+                # Para cada celda de la fila, obtenemos las líneas envueltas
+                cell_lines = []
+                max_lines = 0
+                for i in range(n):
                     try:
+                        # Intentamos formatear numéricamente
                         num = float(row[i])
-                        item_str = f"{num:.2f}"
+                        if len(headers) < 18:
+                            cell_text = f"{num:.2f}"
+                        else:
+                            cell_text = f"{num:.1f}"
                     except (ValueError, TypeError):
-                        item_str = str(row[i])
-                    item_clean = item_str.encode('ascii', 'replace').decode()
-                    self.cell(widths[i], row_height, item_clean, border=1, align='C')
-                # Posicionamos el cursor al inicio de la siguiente fila
-                self.set_xy(margin_left, new_y)
+                        cell_text = str(row[i])
+                    lines = self.multi_cell(widths[i], line_height, cell_text, border=0, align='C', split_only=True)
+                    cell_lines.append(lines)
+                    if len(lines) > max_lines:
+                        max_lines = len(lines)
+                row_height = max_lines * line_height
+                y_start = self.get_y()
+                for i in range(n):
+                    x = margin_left + sum(widths[:i])
+                    for j in range(max_lines):
+                        self.set_xy(x, y_start + j * line_height)
+                        text_to_print = cell_lines[i][j] if j < len(cell_lines[i]) else ""
+                        self.cell(widths[i], line_height, text_to_print, border=0, align='C')
+                # Dibujar el borde de cada celda de la fila
+                for i in range(n):
+                    self.rect(margin_left + sum(widths[:i]), y_start, widths[i], row_height)
+                self.set_xy(margin_left, y_start + row_height)
 
     # Instanciamos la clase
     pdf = PDF()
@@ -117,13 +143,13 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     # Creamos fondo blanco para los títulos y luego el texto en azul
     pdf.set_fill_color(255, 255, 255)  # Fondo de texto blanco
     pdf.set_text_color(67, 142, 189)  # Letra de texto Azul para títulos
-    pdf.set_font("Arial", "B",size=14) # Texto en Arial 14 en negrita
-    title = page_title.encode('ascii', 'replace').decode()
+    pdf.set_font(pdf.myfont, "B", size=14) # Texto en Arial 14 en negrita
+    title = page_title
     pdf.cell(0, 10, title, 0, 1, 'C')
     pdf.ln(5)
 
     # Texto de equipos seleccionados
-    pdf.set_font("Arial", "", 12)
+    pdf.set_font(pdf.myfont, "", 12)
     equipos_text = ", ".join(selected_teams)
     pdf.cell(0, 10, f"Comparación entre {equipos_text}", 0, 1, "C")
     pdf.ln(5)
@@ -171,8 +197,8 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf.ln(8)
 
     # Introducimos las tablas
-    headers = ['Equipo', 'Part', 'Pts', 'T2A','T2I','T2%', 'T3A', 'T3I', 'T3%', 'TCA', 'TCI', 'TC%', 'TLA', 'TLI', 'TL%', 'R.Of', 'R.Df',
-               'R.Tot', 'Ast', 'Rob', 'Tap', 'TO%']
+    headers = ['Equipo', 'P', 'Pts', 'T2A','T2I','T2%', 'T3A', 'T3I', 'T3%', 'TCA', 'TCI', 'TC%', 'TLA', 'TLI', 'TL%', 'RO', 'RD',
+               'RT', 'Ast', 'Rob', 'Tap', 'TO%']
     data_team = df_sql_team.values.tolist()
     data_opp = df_sql_opp.values.tolist()
 
@@ -195,26 +221,37 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf.create_table(headers, data_opp, col_width=col_width_opp)
     pdf.ln(10)
 
-    # if len(selected_teams) == 1:
-
-    # elif len(selected_teams) == 2:
-
     pdf.set_text_color(0, 0, 0) # Color de fuente negro para la descripción
     pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
     pdf.cell(page_width/2, 2, 'Comparación promedios ataque', border = str(0), align="C")
-    pdf.cell(page_width/2, 2, 'Comparación promedios defensa', border = str(0), align="C") 
+    pdf.cell(page_width/2, 2, 'Comparación promedios defensa', border = str(0), align="C")
+    pdf.ln(70)
     
     pdf.ln(10)
     pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
-    pdf.cell(page_width/2, 2, 'Estadísticas avanzadas ataque', border = str(0), align="C")
+    pdf.cell(page_width, 2, 'Estadísticas avanzadas ataque', border = str(0), align="C")
     pdf.ln(8)
 
-    # Introducimos la tabla de los rivales
-    pdf.cell(page_width/2, 2, 'Estadísticas avanzadas defensa', border = str(0), align="C")
-    pdf.ln(8)
-    
-    
+    # Introducimos la tabla de ataque
+    headers_adv_of = ['Equipo', 'P', 'Pace', 'Of.\nRtg','eFG%','TS%', 'PPT2', 'Vol.\nT2%', 'PPT3', 'Vol\nT3%', 'PPTL', 'FTR', 'RO%', 'Ast%', 'Rob%',
+                      'TO%', 'Tap%', 'Four\nFact']
+    headers_adv_def = ['Equipo', 'P', 'Pace', 'Def\nRtg','DR%', 'RT%', 'eFG%\nRiv','TS%\nRiv', 'PPT2\nRiv', 'Vol.\nT2%\nRiv', 'PPT3\nRiv', 'Vol\nT3%\nRiv',
+                       'PPTL\nRiv', 'FTR\nRiv', 'Ast%\nRiv', 'Rob%\nRiv', 'TO%\nRiv', 'Tap%\nRiv', 'Four\nFact\nRiv']
+    data_adv_of = tabla_ataque.values.tolist()
+    data_adv_def = tabla_defensa.values.tolist()
+    col_width_adv_of = page_width / len(headers_adv_of)
+    pdf.create_table(headers_adv_of, data_adv_of, col_width=col_width_adv_of)
     pdf.ln(10)
+
+    pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
+    # Introducimos la tabla de los rivales
+    pdf.cell(page_width, 2, 'Estadísticas avanzadas defensa', border = str(0), align="C")
+    pdf.ln(8)
+    col_width_adv_of = page_width / len(headers_adv_of)
+    pdf.create_table(headers_adv_def, data_adv_def, col_width=col_width_adv_of)
+    pdf.ln(10)
+    
+    
     pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
     pdf.cell(page_width, 2, 'Eficiencia ofensiva vs eficiencia defensiva', border = str(0), align="C")
     pdf.ln(10)

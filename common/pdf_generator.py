@@ -4,6 +4,9 @@ import os
 import base64
 import textwrap
 import math
+import io
+import plotly.io as pio
+from common.functions import grafica_piramide_equipo, grafica_metricas_comparacion
 
 def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_sql_opp, tabla_ataque, tabla_defensa, output_filename = None):
     
@@ -224,8 +227,54 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf.set_text_color(0, 0, 0) # Color de fuente negro para la descripción
     pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
     pdf.cell(page_width/2, 2, 'Comparación promedios ataque', border = str(0), align="C")
+    if len(selected_teams) == 1:
+        # Si hay un solo equipo, mostramos los valores de un equipo
+        metrics_attack = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
+        fig_attack = grafica_piramide_equipo(df_sql_team, selected_teams[0], metrics_attack)
+        
+        # Exportamos la figura a imagen usando Kaleido
+        img_bytes = pio.to_image(fig_attack, format='png', width=700, height=500)
+        temp_img_path = "temp_attack.png"
+        with open(temp_img_path, "wb") as f:
+            f.write(img_bytes)
+        # Insertamos la imagen en el PDF
+        pdf.image(temp_img_path, x=pdf.l_margin, y=pdf.get_y(), w=pdf.w - 2 * pdf.l_margin)
+        pdf.ln(10)
+
+    elif len(selected_teams) == 2:
+        # Si hay dos equipos, se muestran en dos columnas
+        metrics_attack = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
+        # Obtenemos la figura sin mostrarla
+        fig_attack = grafica_metricas_comparacion(df_sql_team, selected_teams[0], selected_teams[1], metrics_attack)
+        
+        # Exportamos la figura a imagen usando Kaleido
+        img_bytes = pio.to_image(fig_attack, format='png', width=700, height=500)
+        temp_img_path = "temp_attack.png"
+        with open(temp_img_path, "wb") as f:
+            f.write(img_bytes)
+        # Insertamos la imagen en el PDF
+        pdf.image(temp_img_path, x=pdf.l_margin, y=pdf.get_y(), w=pdf.w - 2 * pdf.l_margin)
+        pdf.ln(10)
+
     pdf.cell(page_width/2, 2, 'Comparación promedios defensa', border = str(0), align="C")
-    pdf.ln(70)
+    
+    # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
+    metrics = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
+    # Supongamos que ya tienes la figura generada:
+    fig = grafica_metricas_comparacion(df_sql_team, selected_teams[0], selected_teams[1], metrics)  # Asegurate de que esta función devuelva la figura
+    # Exportamos la figura a imagen PNG usando Kaleido
+    img_bytes = pio.to_image(fig, format='png', width=700, height=500)
+    # Guardamos la imagen en un archivo temporal
+    temp_img_path = "temp_graph.png"
+    with open(temp_img_path, "wb") as f:
+        f.write(img_bytes)
+    # Ahora insertamos la imagen en el PDF:
+    # Por ejemplo, en generate_pdf_pag1() en el lugar donde quieras que aparezca la gráfica:
+    pdf.image(temp_img_path, x=pdf.l_margin, y=pdf.get_y(), w=pdf.w - 2 * pdf.l_margin)
+    # Si lo deseas, luego eliminás el archivo temporal
+    os.remove(temp_img_path)
+    
+    pdf.ln(90)
     
     pdf.ln(10)
     pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
@@ -239,6 +288,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
                        'PPTL\nRiv', 'FTR\nRiv', 'Ast%\nRiv', 'Rob%\nRiv', 'TO%\nRiv', 'Tap%\nRiv', 'Four\nFact\nRiv']
     data_adv_of = tabla_ataque.values.tolist()
     data_adv_def = tabla_defensa.values.tolist()
+    
     col_width_adv_of = page_width / len(headers_adv_of)
     pdf.create_table(headers_adv_of, data_adv_of, col_width=col_width_adv_of)
     pdf.ln(10)
@@ -247,8 +297,8 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     # Introducimos la tabla de los rivales
     pdf.cell(page_width, 2, 'Estadísticas avanzadas defensa', border = str(0), align="C")
     pdf.ln(8)
-    col_width_adv_of = page_width / len(headers_adv_of)
-    pdf.create_table(headers_adv_def, data_adv_def, col_width=col_width_adv_of)
+    col_width_adv_def = page_width / len(headers_adv_def)
+    pdf.create_table(headers_adv_def, data_adv_def, col_width=col_width_adv_def)
     pdf.ln(10)
     
     

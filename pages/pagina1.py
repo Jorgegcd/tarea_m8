@@ -296,8 +296,7 @@ if "selected_season" in st.session_state:
                     posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
                     # Por ejemplo, si querés asignar colores específicos:
                     colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
-                    fig_donut = grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores=colores_azules)
-                    st.plotly_chart(fig_donut, use_container_width=True)
+                    grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores=colores_azules, display = True)
 
                 elif len(selected_teams) == 1:
                     equipo = selected_teams[0]
@@ -305,8 +304,7 @@ if "selected_season" in st.session_state:
                     posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
                     # Por ejemplo, si querés asignar colores específicos:
                     colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
-                    fig_donut = grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores=colores_azules)
-                    st.plotly_chart(fig_donut, use_container_width=True)
+                    grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores=colores_azules, display = True)
 
             with col2:
                 if len(selected_teams) == 2:
@@ -342,7 +340,7 @@ if "selected_season" in st.session_state:
                     posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
                     # Por ejemplo, si querés asignar colores específicos:
                     colores_rojos = ["tomato", "red", "#b11f1f", "#f88686"]
-                    st.plotly_chart(grafica_donut_posesiones(df_sql_team, equipo_right, posesiones_equipo, colores = colores_rojos))
+                    grafica_donut_posesiones(df_sql_team, equipo_right, posesiones_equipo, colores = colores_rojos, display = True)
 
                 elif len(selected_teams) == 1:
                     equipo = selected_teams[0]
@@ -380,13 +378,13 @@ if "selected_season" in st.session_state:
                     est_defensa = ['Def. Rtg', 'Def. Reb%', 'eFG% Rivales', 'TS% Rivales', 'FT Rate Rivales', 'Vol. T2% Rivales', 'Vol. T3% Rivales', 'Ast% Rivales',
                                    'Pérdidas% Rivales', 'Robos%', 'Four Factors Rivales']
                     
-                    st.plotly_chart(grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa))
+                    grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa, display = True)
 
                 elif len(selected_teams) == 1:
                     equipo_left = selected_teams[0]
                     st.markdown("<h3 style='text-align: center;'>Estadísticas rivales</h3>", unsafe_allow_html=True)
                     est_defensa = ['drtg', 'dr%', 'ts%_opp', 'ast%_opp']
-                    st.plotly_chart(grafica_radar_comparativo(df_selected, df_temporada, teams, metrics = est_defensa))
+                    grafica_radar_comparativo(df_selected, df_temporada, teams, metrics = est_defensa, display = True)
             
             with col3:
                 if len(selected_teams) == 2:
@@ -396,7 +394,7 @@ if "selected_season" in st.session_state:
                     st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones rivales de {equipo_right} </h3>", unsafe_allow_html=True)
                         
                     posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
-                    st.plotly_chart(grafica_donut_posesiones(df_sql_opp, equipo_right, posesiones_rival, colores = colores_rojos))
+                    grafica_donut_posesiones(df_sql_opp, equipo_right, posesiones_rival, colores = colores_rojos, display = True)
             
         if len(selected_teams) > 0:
             st.button('Imprimir Página')

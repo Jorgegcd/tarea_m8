@@ -135,7 +135,7 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display
     
     # Si display es True, muestra la gráfica en Streamlit
     if display:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key = f'piramide_{equipo_left}_{equipo_right}_{metrics}')
 
     # Retorna la figura (para poder exportarla luego en el PDF)
     return fig
@@ -215,7 +215,7 @@ def grafica_piramide_equipo(df, equipo, metrics, display = True):
     
     # Si display es True, muestra la gráfica en Streamlit
     if display:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key = f'piramide_{equipo}_{metrics}')
 
     # Retorna la figura (para poder exportarla luego en el PDF)
     return fig
@@ -281,7 +281,7 @@ def grafica_donut_posesiones(df, equipo, categorias, colores = None, display=Tru
     
     # Si display es True, muestra la gráfica en Streamlit
     if display:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key = f"donut_chart_{equipo}_{categorias}")
 
     # Retorna la figura (para poder exportarla luego en el PDF)
     return fig
@@ -384,7 +384,7 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics, display = True):
     
     # Si display es True, muestra la gráfica en Streamlit
     if display:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key = f'radar_{teams}_{metrics}')
 
     # Retorna la figura (para poder exportarla luego en el PDF)
     return fig

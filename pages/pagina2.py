@@ -10,5 +10,5 @@ if 'usuario' in st.session_state:
 else:
     st.write("Por favor, inicia sesión para ver el menú.")
 
-st.header("Estadísticas Jugadores - Players Stats")
-st.write("Contenido de la página de estadísticas de jugadores")
+# Indicamos título de página
+st.markdown(f"<h1 style='text-align: center;'>Comparador de Jugadores de la ABA League 2</h1>", unsafe_allow_html=True)

@@ -304,7 +304,7 @@ if "selected_season" in st.session_state:
                     posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
                     # Por ejemplo, si querés asignar colores específicos:
                     colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
-                    grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores=colores_azules, display = True)
+                    grafica_donut_posesiones(df_sql_team, equipo, posesiones_equipo, colores=colores_azules, display = True)
 
             with col2:
                 if len(selected_teams) == 2:
@@ -407,8 +407,8 @@ if "selected_season" in st.session_state:
                 posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
                 colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
                 
-                fig_donut_1 = grafica_donut_posesiones(df_sql_team, selected_teams[0], posesiones_equipo, colores = colores_azules)
-                fig_donut_2 = grafica_donut_posesiones(df_sql_team, selected_teams[1], posesiones_equipo, colores = colores_azules)
+                fig_donut_1 = grafica_donut_posesiones(df_sql_team, selected_teams[0], posesiones_equipo, colores = colores_azules, display = False)
+                fig_donut_2 = grafica_donut_posesiones(df_sql_team, selected_teams[1], posesiones_equipo, colores = colores_rojos, display = False)
                 
                 donut_path_1 = 'temp/donut_path_1.png'
                 donut_path_2 = 'temp/donut_path_2.png'

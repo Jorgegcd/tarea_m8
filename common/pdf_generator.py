@@ -282,7 +282,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     fig_donut_1.write_image(donut_path_1, format='png')
 
     fig_donut_2 = grafica_donut_posesiones(df_sql_team, selected_teams[1], posesiones_equipo, colores=colores_rojos, display=False)
-    donut_path_2 = 'temp/donut_path_1.png'
+    donut_path_2 = 'temp/donut_path_2.png'
     fig_donut_2.write_image(donut_path_2, format='png')
 
     donut_y = pdf.get_y()

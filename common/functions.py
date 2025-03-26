@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import numpy as np
 import base64
 import os
+import uuid
 
 # Supongamos que "df" es tu DataFrame original
 def crear_tablas(df):
@@ -134,7 +135,7 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display
                       )
     
     # Si display es True, muestra la gráfica en Streamlit
-    if display:
+    if display is True:
         st.plotly_chart(fig, use_container_width=True, key = f'piramide_{equipo_left}_{equipo_right}_{metrics}')
 
     # Retorna la figura (para poder exportarla luego en el PDF)
@@ -214,7 +215,7 @@ def grafica_piramide_equipo(df, equipo, metrics, display = True):
     fig.update_layout(annotations=annotations)
     
     # Si display es True, muestra la gráfica en Streamlit
-    if display:
+    if display is True:
         st.plotly_chart(fig, use_container_width=True, key = f'piramide_{equipo}_{metrics}')
 
     # Retorna la figura (para poder exportarla luego en el PDF)
@@ -281,7 +282,8 @@ def grafica_donut_posesiones(df, equipo, categorias, colores = None, display=Tru
     
     # Si display es True, muestra la gráfica en Streamlit
     if display:
-        st.plotly_chart(fig, use_container_width=True, key = f"donut_chart_{equipo}_{categorias}")
+        unique_key = f"donut_chart_{equipo}_{'_'.join(categorias)}_{uuid.uuid4().hex}"
+        st.plotly_chart(fig, use_container_width=True, key = unique_key)
 
     # Retorna la figura (para poder exportarla luego en el PDF)
     return fig
@@ -383,7 +385,7 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics, display = True):
     fig.data = other_traces + median_trace
     
     # Si display es True, muestra la gráfica en Streamlit
-    if display:
+    if display is True:
         st.plotly_chart(fig, use_container_width=True, key = f'radar_{teams}_{metrics}')
 
     # Retorna la figura (para poder exportarla luego en el PDF)
@@ -528,7 +530,7 @@ def scatter_eficiencia (df, selected_teams, display = True):
     fig.update_layout(showlegend=False, width = 415, height = 830)
     
     # Si display es True, muestra la gráfica en Streamlit
-    if display:
+    if display is True:
         st.plotly_chart(fig, use_container_width=True)
 
     # Retorna la figura (para poder exportarla luego en el PDF)

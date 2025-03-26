@@ -33,7 +33,7 @@ def crear_tablas(df):
     
     return tabla1, tabla2
 
-def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
+def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display=True):
     """
     Genera una gráfica estilo pirámide de población para comparar equipos.
     Los valores del equipo_left se muestran como negativos y los del equipo_right como positivos.
@@ -132,12 +132,15 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
                       showlegend=True,
                       legend=dict(orientation='h', yanchor='top', y=1.2, xanchor='center', x=0.5)
                       )
-
-    fig.update_layout(annotations=annotations)
     
-    st.plotly_chart(fig, use_container_width=True)
+    # Si display es True, muestra la gráfica en Streamlit
+    if display:
+        st.plotly_chart(fig, use_container_width=True)
 
-def grafica_piramide_equipo(df, equipo, metrics):
+    # Retorna la figura (para poder exportarla luego en el PDF)
+    return fig
+
+def grafica_piramide_equipo(df, equipo, metrics, display = True):
     left_vals = []
     
     # Recorremos cada métrica y extraemos los valores para cada equipo
@@ -210,10 +213,15 @@ def grafica_piramide_equipo(df, equipo, metrics):
 
     fig.update_layout(annotations=annotations)
     
-    st.plotly_chart(fig, use_container_width=True)
+    # Si display es True, muestra la gráfica en Streamlit
+    if display:
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Retorna la figura (para poder exportarla luego en el PDF)
+    return fig
 
 # Creamos un donut chart con la distribución de posesiones.
-def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = None):
+def grafica_donut_posesiones(df, equipo, categorias, colores = None, display=True):
     
     # Filtrar el DataFrame para el equipo deseado
     df_equipo = df[df["Equipo"] == equipo]
@@ -250,7 +258,7 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
     # Convertimos el diccionario a un DataFrame
     donut_df = pd.DataFrame(list(data.items()), columns=["Categoría", "Valor"])
     
-    # Crear el gráfico de rosquilla (donut) con Plotly Express
+    # Crear el gráfico de donut con Plotly Express
     fig = px.pie(
         donut_df,
         names="Categoría",
@@ -271,34 +279,15 @@ def grafica_donut_posesiones(df, equipo, categorias, logo_path=None, colores = N
     # Fijamos el dominio para que el donut siempre tenga centro (0.5,0.5) y dimensiones fijas.
     fig.update_traces(domain={'x': [0.05, 0.95], 'y': [0.05, 0.95]})
     
-    # Si se ha pasado la ruta del logo, lo añadimos en el centro
-    if logo_path is None:
-        current_dir = os.getcwd()
-        team_id = row["team_id"]
-        logo_path = os.path.join(current_dir, "images", "teams", f"{team_id}.png")
+    # Si display es True, muestra la gráfica en Streamlit
+    if display:
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Ahora intentamos cargar el logo y añadirlo en el centro
-    try:
-        with open(logo_path, "rb") as image_file:
-            encoded_logo = base64.b64encode(image_file.read()).decode()
-        fig.add_layout_image(
-            dict(
-                source="data:image/png;base64," + encoded_logo,
-                xref="paper", yref="paper",
-                x=0.5, y=0.5,
-                sizex=0.2, sizey=0.2,
-                xanchor="center", yanchor="middle",
-                layer="above"
-            )
-        )
-    except Exception as e:
-        st.error(f"Error al cargar el logo: {e}")
-    
-    # Mostrar la gráfica en Streamlit
-    st.plotly_chart(fig, use_container_width=True)
+    # Retorna la figura (para poder exportarla luego en el PDF)
+    return fig
 
 # Generamos una función para el radar comparativo
-def grafica_radar_comparativo(df_selected, df, teams, metrics):
+def grafica_radar_comparativo(df_selected, df, teams, metrics, display = True):
     
     fig = go.Figure()
 
@@ -393,10 +382,14 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics):
     other_traces = [trace for trace in fig.data if trace.name != "Mediana"]
     fig.data = other_traces + median_trace
     
-    st.plotly_chart(fig, use_container_width=True)
+    # Si display es True, muestra la gráfica en Streamlit
+    if display:
+        st.plotly_chart(fig, use_container_width=True)
 
+    # Retorna la figura (para poder exportarla luego en el PDF)
+    return fig
 # Generamos función para scatter de eficiencia
-def scatter_eficiencia (df, selected_teams):
+def scatter_eficiencia (df, selected_teams, display = True):
    
    # Crear una copia para no modificar el DataFrame original
     df_plot = df.copy()
@@ -534,4 +527,9 @@ def scatter_eficiencia (df, selected_teams):
     # Quitar la leyenda
     fig.update_layout(showlegend=False, width = 415, height = 830)
     
-    st.plotly_chart(fig, use_container_width=True)
+    # Si display es True, muestra la gráfica en Streamlit
+    if display:
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Retorna la figura (para poder exportarla luego en el PDF)
+    return fig

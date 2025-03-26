@@ -2,11 +2,11 @@ import streamlit as st
 import common.login as login
 import os
 
-st.header('Comparador ABA League 2')
+st.markdown(f"<h1 style='text-align: center;'>Comparador de equipos ABA League 2</h1>", unsafe_allow_html=True)
 login.generarLogin()
 
 if 'usuario' in st.session_state:
-    st.subheader('Página principal')
+    st.markdown(f"<h2 style='text-align: center;'>Página principal</h2>", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
     

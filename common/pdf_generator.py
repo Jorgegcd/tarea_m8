@@ -1,14 +1,15 @@
 from fpdf import FPDF
 from datetime import datetime
 import os
-import base64
+import streamlit as st
 import textwrap
 import math
 import io
 import plotly.io as pio
-from common.functions import grafica_piramide_equipo, grafica_metricas_comparacion
+from common.functions import grafica_piramide_equipo, grafica_metricas_comparacion, scatter_eficiencia, grafica_donut_posesiones
 
-def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_sql_opp, tabla_ataque, tabla_defensa, output_filename = None):
+
+def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_sql_opp, tabla_ataque, tabla_defensa, donut_path_1, donut_path_2, output_filename = None):
     
     # Generamos el PDF vertical
     class PDF(FPDF):
@@ -143,7 +144,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf = PDF()
     pdf.add_page()
 
-    # Creamos fondo blanco para los títulos y luego el texto en azul
+    # Título de la página
     pdf.set_fill_color(255, 255, 255)  # Fondo de texto blanco
     pdf.set_text_color(67, 142, 189)  # Letra de texto Azul para títulos
     pdf.set_font(pdf.myfont, "B", size=14) # Texto en Arial 14 en negrita
@@ -227,53 +228,9 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf.set_text_color(0, 0, 0) # Color de fuente negro para la descripción
     pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
     pdf.cell(page_width/2, 2, 'Comparación promedios ataque', border = str(0), align="C")
-    if len(selected_teams) == 1:
-        # Si hay un solo equipo, mostramos los valores de un equipo
-        metrics_attack = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
-        fig_attack = grafica_piramide_equipo(df_sql_team, selected_teams[0], metrics_attack)
-        
-        # Exportamos la figura a imagen usando Kaleido
-        img_bytes = pio.to_image(fig_attack, format='png', width=700, height=500)
-        temp_img_path = "temp_attack.png"
-        with open(temp_img_path, "wb") as f:
-            f.write(img_bytes)
-        # Insertamos la imagen en el PDF
-        pdf.image(temp_img_path, x=pdf.l_margin, y=pdf.get_y(), w=pdf.w - 2 * pdf.l_margin)
-        pdf.ln(10)
-
-    elif len(selected_teams) == 2:
-        # Si hay dos equipos, se muestran en dos columnas
-        metrics_attack = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
-        # Obtenemos la figura sin mostrarla
-        fig_attack = grafica_metricas_comparacion(df_sql_team, selected_teams[0], selected_teams[1], metrics_attack)
-        
-        # Exportamos la figura a imagen usando Kaleido
-        img_bytes = pio.to_image(fig_attack, format='png', width=700, height=500)
-        temp_img_path = "temp_attack.png"
-        with open(temp_img_path, "wb") as f:
-            f.write(img_bytes)
-        # Insertamos la imagen en el PDF
-        pdf.image(temp_img_path, x=pdf.l_margin, y=pdf.get_y(), w=pdf.w - 2 * pdf.l_margin)
-        pdf.ln(10)
-
     pdf.cell(page_width/2, 2, 'Comparación promedios defensa', border = str(0), align="C")
     
-    # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
-    metrics = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
-    # Supongamos que ya tienes la figura generada:
-    fig = grafica_metricas_comparacion(df_sql_team, selected_teams[0], selected_teams[1], metrics)  # Asegurate de que esta función devuelva la figura
-    # Exportamos la figura a imagen PNG usando Kaleido
-    img_bytes = pio.to_image(fig, format='png', width=700, height=500)
-    # Guardamos la imagen en un archivo temporal
-    temp_img_path = "temp_graph.png"
-    with open(temp_img_path, "wb") as f:
-        f.write(img_bytes)
-    # Ahora insertamos la imagen en el PDF:
-    # Por ejemplo, en generate_pdf_pag1() en el lugar donde quieras que aparezca la gráfica:
-    pdf.image(temp_img_path, x=pdf.l_margin, y=pdf.get_y(), w=pdf.w - 2 * pdf.l_margin)
-    # Si lo deseas, luego eliminás el archivo temporal
-    os.remove(temp_img_path)
-    
+        
     pdf.ln(90)
     
     pdf.ln(10)
@@ -304,11 +261,35 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     
     pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
     pdf.cell(page_width, 2, 'Eficiencia ofensiva vs eficiencia defensiva', border = str(0), align="C")
+    pdf.ln(8)
+    
     pdf.ln(10)
     
+    # Ubicación de los gráficos de donut
+    page_width = pdf.w - 2 * pdf.l_margin
     pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
-    pdf.cell(page_width/2, 2, f'Distribución posesiones', border = str(0), align="C")
-    pdf.cell(page_width/2, 2, f'Distribución posesiones', border = str(0), align="C")
+    pdf.cell(page_width/2, 2, f'Distribución posesiones {selected_teams[0]}', border = str(0), align="C")
+    pdf.cell(page_width/2, 2, f'Distribución posesiones {selected_teams[1]}', border = str(0), align="C")
+    pdf.ln(8)
+    
+    # Genera la figura DONUT sin mostrarla en la app:
+    posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
+    colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
+    colores_rojos = ["tomato", "red", "#b11f1f", "#f88686"]
+    
+    fig_donut_1 = grafica_donut_posesiones(df_sql_team, selected_teams[0], posesiones_equipo, colores=colores_azules, display=False)
+    donut_path_1 = 'temp/donut_path_1.png'
+    fig_donut_1.write_image(donut_path_1, format='png')
+
+    fig_donut_2 = grafica_donut_posesiones(df_sql_team, selected_teams[1], posesiones_equipo, colores=colores_rojos, display=False)
+    donut_path_2 = 'temp/donut_path_1.png'
+    fig_donut_2.write_image(donut_path_2, format='png')
+
+    donut_y = pdf.get_y()
+    pdf.image(donut_path_1, x=pdf.l_margin, y=donut_y, w=(page_width/2)-5)
+    pdf.image(donut_path_2, x=pdf.l_margin + (page_width/2)+5, y=donut_y, w=(page_width/2)-5)
+
+    pdf.ln(60)  # Ajusta este valor según la altura de tus gráficos
     pdf.ln(10)
 
     pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
@@ -317,8 +298,8 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf.ln(10)
 
     pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
-    pdf.cell(page_width/2, 2, 'Distribución posesiones rivales', border = str(0), align="C")
-    pdf.cell(page_width/2, 2, 'Distribución posesiones rivales', border = str(0), align="C")
+    pdf.cell(page_width/2, 2, f'Distribución posesiones rivales {selected_teams[0]}', border = str(0), align="C")
+    pdf.cell(page_width/2, 2, f'Distribución posesiones rivales {selected_teams[1]}', border = str(0), align="C")
     pdf.ln(10)
 
     pdf.output(output_filename)

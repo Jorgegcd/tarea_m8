@@ -2,7 +2,7 @@ import streamlit as st
 import common.menu as menu
 import pandas as pd
 import os
-from common.functions_pag2 import caja_metricas, calcular_metricas
+from common.functions_pag2 import caja_metricas, calcular_metricas, grafica_evolucion_resultados
 from common.pdf_generator import generate_pdf_pag1
 from sqlalchemy import create_engine
 import plotly.express as px
@@ -165,7 +165,7 @@ if "selected_season" in st.session_state:
                 pts_opp = df_team_jornadas['pts_opp'].sum()
 
                 # Filtrar puntos reales desde la BBDD (según jornada y equipo)
-                poss =(fga + 0.44 * fta - oreb + to)
+                poss = 0.96*(fga + 0.44 * fta - oreb + to)
 
                 # Calculamos la eficiencia ofensiva y defensiva del equipo seleccionado
                 ortg_jornadas = (pts / poss) * 100 if poss > 0 else 0
@@ -252,5 +252,18 @@ if "selected_season" in st.session_state:
 
                     tablas[team] = df_metrics
 
-                    st.markdown(f"### 📊 Tabla comparativa: {team}")
+                    st.markdown(f"<h4 style='text-align: center;'>Estadísticas globales temporada y selección de jornadas - {team}</h4>", unsafe_allow_html=True)
                     st.dataframe(tablas[team].set_index('Métrica'), use_container_width=True)
+                
+                # Gráficas de evolución de resultados
+
+                for team in selected_teams:
+                    st.markdown(
+                        f"<h4 style='text-align: center;'>Evolución partidos temporada {st.session_state.selected_season} {team}</h4>",
+                        unsafe_allow_html=True
+                    )
+
+                    team_id = df_temporada[df_temporada['team_name'] == team]['team_id'].iloc[0]
+
+                    fig = grafica_evolucion_resultados(df_filtrado, team)
+                    st.plotly_chart(fig, use_container_width=True)

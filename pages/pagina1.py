@@ -22,7 +22,7 @@ else:
     st.write("Por favor, inicia sesión para ver el menú.")
 
 # Indicamos título de página
-st.markdown(f"<h1 style='text-align: center;'>Comparador de equipos ABA League 2</h1>", unsafe_allow_html=True)
+st.markdown(f"<h1 style='text-align: center;'>Comparador de totales de equipos ABA League 2</h1>", unsafe_allow_html=True)
 
 # Leemos el CSV de advanced data (ajusta la ruta según corresponda)
 df = pd.read_csv("data/advanced_data.csv")
@@ -146,9 +146,10 @@ if "selected_season" in st.session_state:
 
                 # Ejecutamos la consulta y la leemos en un DataFrame
                 df_sql_team = pd.read_sql(query, engine)
-                numeric_cols = df_sql_team.select_dtypes(include=['number']).columns
+                df_team = df_sql_team.drop(columns = 'team_id')
+                numeric_cols = df_team.select_dtypes(include=['number']).columns
                 formato = {col: "{:.2f}" for col in numeric_cols}
-                styled_sql_team = df_sql_team.style.format(formato)
+                styled_sql_team = df_team.style.format(formato)
                 # Mostramos la tabla en Streamlit
                 st.dataframe(styled_sql_team)
             
@@ -190,9 +191,10 @@ if "selected_season" in st.session_state:
 
                 # Ejecutamos la consulta y la leemos en un DataFrame
                 df_sql_opp = pd.read_sql(query, engine)
-                numeric_cols = df_sql_opp.select_dtypes(include=['number']).columns
+                df_opp = df_sql_opp.drop(columns = 'team_id')
+                numeric_cols = df_opp.select_dtypes(include=['number']).columns
                 formato = {col: "{:.2f}" for col in numeric_cols}
-                styled_sql_opp = df_sql_opp.style.format(formato)
+                styled_sql_opp = df_opp.style.format(formato)
                 # Mostramos la tabla en Streamlit
                 st.dataframe(styled_sql_opp)
         
@@ -212,7 +214,6 @@ if "selected_season" in st.session_state:
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
                 st.markdown("<h3 style='text-align: center;'>Comparación promedios ataque</h3>", unsafe_allow_html=True)
                 fig_piramide = grafica_metricas_comparacion(df_sql_team, equipo_left, equipo_right, metrics)
-                st.plotly_chart(fig_piramide, use_container_width=True)
             
             with col2:
                 # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
@@ -222,7 +223,6 @@ if "selected_season" in st.session_state:
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
                 st.markdown("<h3 style='text-align: center;'>Comparación promedios defensa</h3>", unsafe_allow_html=True)
                 fig_piramide = grafica_metricas_comparacion(df_sql_opp, equipo_left, equipo_right, metrics)
-                st.plotly_chart(fig_piramide, use_container_width=True)
         
         elif len(selected_teams) == 1:
             # Creamos dos columnas para mostrar las gráficas en paralelo
@@ -239,7 +239,6 @@ if "selected_season" in st.session_state:
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
                 st.markdown("<h3 style='text-align: center;'>Promedios ataque</h3>", unsafe_allow_html=True)
                 fig_piramide = grafica_piramide_equipo(df_sql_team, equipo, metrics)
-                st.plotly_chart(fig_piramide, use_container_width=True)
             
             with col2:
                 
@@ -250,7 +249,6 @@ if "selected_season" in st.session_state:
                 # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
                 st.markdown("<h3 style='text-align: center;'>Promedios defensa</h3>", unsafe_allow_html=True)
                 fig_piramide = grafica_piramide_equipo(df_sql_opp, equipo, metrics)
-                st.plotly_chart(fig_piramide, use_container_width=True)
 
         # Mostrar la tabla filtrada con los datos de los equipos seleccionados
         if len(selected_teams) > 0:
@@ -282,7 +280,7 @@ if "selected_season" in st.session_state:
         if len(selected_teams) > 0:
             st.markdown("<h3 style='text-align: center;'>Eficiencia ofensiva vs eficiencia defensiva</h3>", unsafe_allow_html=True)
             scatter_fig = scatter_eficiencia(df_temporada, selected_teams)
-            st.plotly_chart(scatter_fig, use_container_width=True, key="scatter_eficiencia_app")
+            
             # Posteriormente dividimos en 3 columnas para mostrar gráficos diversos
             col1, col2, col3 = st.columns(3, vertical_alignment="top")
             
@@ -297,6 +295,7 @@ if "selected_season" in st.session_state:
                     # Por ejemplo, si querés asignar colores específicos:
                     colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
                     grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores=colores_azules, display = True)
+                    
 
                 elif len(selected_teams) == 1:
                     equipo = selected_teams[0]
@@ -304,8 +303,8 @@ if "selected_season" in st.session_state:
                     posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
                     # Por ejemplo, si querés asignar colores específicos:
                     colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
-                    grafica_donut_posesiones(df_sql_team, equipo, posesiones_equipo, colores=colores_azules, display = True)
-
+                    fig_donut = grafica_donut_posesiones(df_sql_team, equipo, posesiones_equipo, colores=colores_azules, display = False)
+                    
             with col2:
                 if len(selected_teams) == 2:
                     # Asumimos que la lista selected_teams respeta el orden de selección
@@ -340,6 +339,7 @@ if "selected_season" in st.session_state:
                     posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
                     # Por ejemplo, si querés asignar colores específicos:
                     colores_rojos = ["tomato", "red", "#b11f1f", "#f88686"]
+                    fig_donut_2 = grafica_donut_posesiones(df_sql_team, equipo_right, posesiones_equipo, colores = colores_rojos, display = False)
                     grafica_donut_posesiones(df_sql_team, equipo_right, posesiones_equipo, colores = colores_rojos, display = True)
 
                 elif len(selected_teams) == 1:
@@ -407,15 +407,6 @@ if "selected_season" in st.session_state:
                 posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
                 colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
                 
-                fig_donut_1 = grafica_donut_posesiones(df_sql_team, selected_teams[0], posesiones_equipo, colores = colores_azules, display = False)
-                fig_donut_2 = grafica_donut_posesiones(df_sql_team, selected_teams[1], posesiones_equipo, colores = colores_rojos, display = False)
-                
-                donut_path_1 = 'temp/donut_path_1.png'
-                donut_path_2 = 'temp/donut_path_2.png'
-                
-                fig_donut_1.write_image(donut_path_1)
-                fig_donut_2.write_image(donut_path_2)
-                
                 pdf = generate_pdf_pag1(page_title = 'Comparador de equipos ABA League 2', selected_teams = selected_teams, df_temporada = df_temporada, df_sql_team = df_sql_team,
-                                        df_sql_opp = df_sql_opp, tabla_ataque = tabla_ataque, tabla_defensa = tabla_defensa, donut_path_1 = donut_path_1, donut_path_2 = donut_path_2,
+                                        df_sql_opp = df_sql_opp, tabla_ataque = tabla_ataque, tabla_defensa = tabla_defensa, 
                                         output_filename= 'data/test.pdf')

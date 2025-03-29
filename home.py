@@ -6,15 +6,14 @@ st.markdown(f"<h1 style='text-align: center;'>Comparador de equipos ABA League 2
 login.generarLogin()
 
 if 'usuario' in st.session_state:
-    st.markdown(f"<h2 style='text-align: center;'>Página principal</h2>", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("Estadisticas equipos"):
+        if st.button("Comparador total temporada"):
             st.switch_page("pages/pagina1.py")  # Ir a la página de estadísticas de equipos
 
     with col2:    
-        if st.button("Estadisticas jugadores"):
+        if st.button("Comparador por jornadas"):
             st.switch_page("pages/pagina2.py") # Ir a la página de estadísticas de jugadores
     

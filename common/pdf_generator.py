@@ -9,7 +9,7 @@ import plotly.io as pio
 from common.functions import grafica_piramide_equipo, grafica_metricas_comparacion, scatter_eficiencia, grafica_donut_posesiones
 
 
-def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_sql_opp, tabla_ataque, tabla_defensa, donut_path_1, donut_path_2, output_filename = None):
+def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_sql_opp, tabla_ataque, tabla_defensa, output_filename = None):
     
     # Generamos el PDF vertical
     class PDF(FPDF):
@@ -271,23 +271,23 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf.cell(page_width/2, 2, f'Distribución posesiones {selected_teams[0]}', border = str(0), align="C")
     pdf.cell(page_width/2, 2, f'Distribución posesiones {selected_teams[1]}', border = str(0), align="C")
     pdf.ln(8)
-    
-    # Genera la figura DONUT sin mostrarla en la app:
-    posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
-    colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
-    colores_rojos = ["tomato", "red", "#b11f1f", "#f88686"]
-    
-    fig_donut_1 = grafica_donut_posesiones(df_sql_team, selected_teams[0], posesiones_equipo, colores=colores_azules, display=False)
-    donut_path_1 = 'temp/donut_path_1.png'
-    fig_donut_1.write_image(donut_path_1, format='png')
 
-    fig_donut_2 = grafica_donut_posesiones(df_sql_team, selected_teams[1], posesiones_equipo, colores=colores_rojos, display=False)
-    donut_path_2 = 'temp/donut_path_2.png'
-    fig_donut_2.write_image(donut_path_2, format='png')
+    
 
-    donut_y = pdf.get_y()
-    pdf.image(donut_path_1, x=pdf.l_margin, y=donut_y, w=(page_width/2)-5)
-    pdf.image(donut_path_2, x=pdf.l_margin + (page_width/2)+5, y=donut_y, w=(page_width/2)-5)
+    # Ruta al gráfico de donut del equipo derecho (pasado por fuera o leído de disco)
+    donut_path = os.path.join("temp", f"donut_{selected_teams[1]}.png")
+
+    # Ajusta estas posiciones según el diseño
+    current_y = pdf.get_y() + 5  # un poco de espacio debajo del título
+    pos_x = pdf.l_margin + page_width / 2  # para alinearlo a la derecha
+    img_width = page_width / 2.1  # o lo que quede bien
+
+    if os.path.exists(donut_path):
+        pdf.image(donut_path, x=pos_x, y=current_y, w=img_width)
+    else:
+        pdf.set_text_color(255, 0, 0)
+        pdf.set_font("Arial", "", 8)
+        pdf.cell(page_width, 10, f"No se encontró la imagen: {donut_path}", 0, 1, "C")
 
     pdf.ln(60)  # Ajusta este valor según la altura de tus gráficos
     pdf.ln(10)

@@ -194,7 +194,7 @@ def grafica_piramide_equipo(df, equipo, metrics, display = True):
         annotations.append(dict(
             x=0,
             y=metric,
-            text=f"{left_vals[i]:.2f}",
+            text=metric,
             showarrow=False,
             font=dict(size=12),
             xanchor="center",

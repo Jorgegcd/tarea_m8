@@ -12,8 +12,8 @@ def caja_metricas(titulo, valor, color_fondo="#f0f2f6"):
             flex-direction: column; 
             justify-content: center; 
         '>
-            <div style='font-size: 18px; font-weight: bold; color: #333;'>{titulo}</div>
-            <div style='font-size: 28px; font-weight: bold; margin-top: 10px; color: #1f77b4;'>{valor}</div>
+            <div style='font-size: 16px; font-weight: bold; color: #333;'>{titulo}</div>
+            <div style='font-size: 22px; font-weight: bold; margin-top: 10px; color: #1f77b4;'>{valor}</div>
         </div>
     """, unsafe_allow_html=True)
 

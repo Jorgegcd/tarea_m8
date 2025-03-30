@@ -6,6 +6,7 @@ import numpy as np
 import base64
 import os
 import uuid
+import streamlit.components.v1 as components
 
 # Supongamos que "df" es tu DataFrame original
 def crear_tablas(df):
@@ -535,3 +536,11 @@ def scatter_eficiencia (df, selected_teams, display = True):
 
     # Retorna la figura (para poder exportarla luego en el PDF)
     return fig
+
+def print_window():
+    components.html("""
+        <script>
+            window.print();
+        </script>
+        """, height=0,
+            width=0)

@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-def generarMenu(user):
+def generarMenu(user, tiempo= None):
     """Genera el menú dependiendo del usuario
 
     Args:
@@ -17,7 +17,7 @@ def generarMenu(user):
         st.page_link("pages/pagina1.py", label="Comparador total temporada", icon=":material/groups:")
         st.page_link("pages/pagina2.py", label="Comparador por jornadas", icon=":material/person:") 
         # Botón para cerrar la sesión
-        btnSalir=st.button("Salir")
+        btnSalir=st.button("Salir", key="boton_salir_sidebar")
         if btnSalir:
             st.session_state.clear()
             # Luego de borrar el Session State reiniciamos la app para mostrar la opción de usuario y clave

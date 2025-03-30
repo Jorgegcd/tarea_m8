@@ -1,31 +1,49 @@
 from fpdf import FPDF
-
-def guardar_grafico_plotly(fig, nombre_archivo):
-    fig.write_image(nombre_archivo, format='png', width=700, height=500)
+import os
+import pandas as pd
 
 # Cremaos la función para generar pdf
-def generate_pdf_pag2(fig_total_path, fig_jornadas_path, tablas_dict, output_path="output_pag2.pdf"):
+def generate_pdf_pag2(fig_total_path, fig_jornadas_path, tablas):
     pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    pdf.set_font("Arial", size=14)
-    pdf.cell(200, 10, txt="Informe Estadístico - Comparador Equipos", ln=True, align="C")
+    # Título
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(0, 10, "Comparador de totales de equipos ABA League 2", ln=True, align='C')
 
-    # Insertar imagen radar 1
-    pdf.image(fig_total_path, x=10, y=30, w=90)
-    pdf.image(fig_jornadas_path, x=110, y=30, w=90)
-    pdf.ln(110)
+    # Inserta los radares
+    if os.path.exists(fig_total_path):
+        pdf.image(fig_total_path, x=10, y=30, w=90)
+    if os.path.exists(fig_jornadas_path):
+        pdf.image(fig_jornadas_path, x=110, y=30, w=90)
 
-    # Insertar tablas de métricas como texto (también puedes guardarlas como imagen si prefieres)
-    for equipo, df_metrics in tablas_dict.items():
-        pdf.set_font("Arial", style='B', size=12)
-        pdf.cell(200, 10, txt=f"Estadísticas - {equipo}", ln=True)
+    pdf.ln(100)  # Salto después de los radares
 
-        pdf.set_font("Arial", size=10)
-        for i, row in df_metrics.iterrows():
-            linea = f"{row['Métrica']}: Total={row['Temporada completa']} | Jornadas={row['Jornadas seleccionadas']}"
-            pdf.cell(200, 7, txt=linea, ln=True)
+    # Recorremos las tablas
+    for equipo, df in tablas.items():
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(0, 10, f"Estadísticas globales - {equipo}", ln=True)
+
+        pdf.set_font("Arial", '', 10)
+
+        df_ = df.reset_index() if df.index.name else df
+        # Añadimos encabezado
+        col_names = df_.columns.tolist()
+        col_width = pdf.w / len(col_names) - 10
+        for col in col_names:
+            pdf.cell(col_width, 10, str(col), border=1)
+        pdf.ln()
+
+        # Añadimos filas
+        for _, row in df_.iterrows():
+            for val in row:
+                pdf.cell(col_width, 10, str(round(val, 2)) if isinstance(val, (float, int)) else str(val), border=1)
+            pdf.ln()
 
         pdf.ln(5)
 
+    # Guardar
+    output_path = "temp/reporte.pdf"
     pdf.output(output_path)
+    return output_path

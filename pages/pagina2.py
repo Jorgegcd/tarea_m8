@@ -2,8 +2,8 @@ import streamlit as st
 import common.menu as menu
 import pandas as pd
 import os
-from common.functions_pag2 import caja_metricas, calcular_metricas, grafica_evolucion_resultados
-from common.pdf_generator import generate_pdf_pag1
+from common.functions_pag2 import caja_metricas, calcular_metricas, grafica_evolucion_resultados, calcular_percentiles, radar_comparativo
+from common.pdf_generator_pag2 import generate_pdf_pag2, guardar_grafico_plotly
 from sqlalchemy import create_engine
 import plotly.express as px
 import base64
@@ -130,7 +130,7 @@ if "selected_season" in st.session_state:
                         st.error(f"No se encontró la imagen: {logos[1]}")
     
         if len(selected_teams) > 0:
-            # Creamos dos columnas para mostrar las tablas en paralelo
+            # Creamos seis columnas para mostrar las fichas en paralelo
             col1, col2, col3, col4, col5, col6 = st.columns(6)
 
             # Diccionario para guardar métricas por equipo
@@ -265,5 +265,164 @@ if "selected_season" in st.session_state:
 
                     team_id = df_temporada[df_temporada['team_name'] == team]['team_id'].iloc[0]
 
-                    fig = grafica_evolucion_resultados(df_filtrado, team)
+                    # Filtramos SOLO los partidos de ese equipo
+                    df_team_jornadas_total = df_jornadas[(df_jornadas['team_id'] == team_id) &
+                        (df_jornadas['season'] == st.session_state.selected_season)
+                    ].sort_values("week")
+
+                    fig = grafica_evolucion_resultados(df_team_jornadas_total, team, df_temporada)
                     st.plotly_chart(fig, use_container_width=True)
+                
+            if len(selected_teams) >= 1:
+
+                col1, col2 = st.columns(2)
+
+            # Diccionario para guardar métricas por equipo
+            equipos_data = {}
+            
+            for team in selected_teams:
+                # Obtenemos el ID del equipo
+                team_id = df_temporada[df_temporada['team_name'] == team]['team_id'].iloc[0]
+
+                # Filtramos las jornadas del equipo
+                df_team_jornadas = df_jornadas_filtrado[
+                    (df_jornadas_filtrado['team_id'] == team_id) &
+                    (df_jornadas_filtrado['season'] == st.session_state.selected_season)
+                ]
+
+                # Si no hay partidos, mostramos aviso
+                if df_team_jornadas.empty:
+                    st.warning("No hay partidos para este equipo en el rango seleccionado.")
+                    continue
+
+                # Victories & defeats
+                victorias = (df_team_jornadas['w/l'].str.upper() == 'W').sum()
+                derrotas = (df_team_jornadas['w/l'].str.upper() == 'L').sum()
+                partidos_jornadas = len(df_team_jornadas)
+
+                teams_ids = df_temporada["team_id"].unique()
+                lista_metricas = []
+
+                for team in teams_ids:
+                    df_team = df_jornadas_filtrado[(df_jornadas_filtrado["team_id"] == team) & (df_jornadas_filtrado["season"] == st.session_state.selected_season)]
+
+                    if df_team.empty:
+                        continue
+                
+                    # Cálculamos la suma de las estadísticas
+                    fgm = df_team['fgm'].sum()
+                    fga = df_team['fga'].sum()
+                    fg3m = df_team['fg3m'].sum()
+                    fgm_opp = df_team['fgm_opp'].sum()
+                    fga_opp = df_team['fga_opp'].sum()
+                    fg3m_opp = df_team['fg3m_opp'].sum()
+                    fta = df_team['fta'].sum()
+                    fta_opp = df_team['fta_opp'].sum()
+                    to = df_team['to'].sum()
+                    oreb = df_team['or'].sum()
+                    dr = df_team['dr'].sum()
+                    ast = df_team['ass'].sum()
+                    or_opp = df_team['or_opp'].sum()
+                    dr_opp = df_team['dr_opp'].sum()
+                    pts = df_team['pts'].sum()
+                    pts_opp = df_team['pts_opp'].sum()
+
+                    # Calculamos las posesiones
+                    poss = 0.96*(fga + 0.44 * fta - oreb + to)
+
+                    # Cálculo de métricas
+                    ortg_jornadas = (pts / poss) * 100 if poss > 0 else 0
+                    drtg_jornadas = (pts_opp / poss) * 100 if poss > 0 else 0
+                    efg_jornadas = (fgm + (0.5 * fg3m)) / fga
+                    efg_opp_jornadas = (fgm_opp + (0.5 * fg3m_opp)) / fga_opp
+                    ts_jornadas = pts / (2 * (fga + 0.44 * fta))
+                    ts_opp_jornadas = pts_opp / (2 * (fga_opp + 0.44 * fta_opp))
+                    oreb_perc_jornadas = oreb / (oreb + dr_opp) if (oreb + dr_opp) > 0 else 0
+                    dreb_perc_jornadas = dr / (dr + or_opp) if (dr + or_opp) > 0 else 0
+                    ast_pct_jornadas = (ast / fga) * 100 if fgm > 0 else 0
+                    to_pct_jornadas = (to / poss) * 100 if poss > 0 else 0
+                    ftr_jornadas = (fta / fga) * 100 if fga > 0 else 0
+
+                    lista_metricas.append({
+                    "team_id": team,
+                    "ortg": ortg_jornadas,
+                    "drtg": drtg_jornadas,
+                    "ts%": ts_jornadas,
+                    "efg%": efg_jornadas,
+                    "ts%_opp": ts_opp_jornadas,
+                    "efg%_opp": efg_opp_jornadas,
+                    "dr%": dreb_perc_jornadas,
+                    "or%": oreb_perc_jornadas,
+                    "ftr": ftr_jornadas,
+                    "ast%": ast_pct_jornadas,
+                    "to%": to_pct_jornadas,
+                })
+                
+            # Creamos el DataFrame final para calcular percentiles
+            df_liga_jornadas = pd.DataFrame(lista_metricas)
+                
+            # Cambiamos nombre columnas para mostrar
+            df_temporada = df_temporada.rename(columns= {'ortg':'Of.Rtg', 'drtg':'Df.Rtg', 'ts%':'TS', 'efg%':'eFG', 'ts%_opp':'TS Opp',
+                                                         'efg%_opp':'eFG Opp', 'dr%':'DReb%', 'or%':'OReb%', 'ftr':'FTR', 'ast%':'Ast%', 'to%':'TO%'})
+            df_liga_jornadas = df_liga_jornadas.rename(columns= {'ortg':'Of.Rtg', 'drtg':'Df.Rtg', 'ts%':'TS', 'efg%':'eFG', 'ts%_opp':'TS Opp',
+                                                         'efg%_opp':'eFG Opp', 'dr%':'DReb%', 'or%':'OReb%', 'ftr':'FTR', 'ast%':'Ast%', 'to%':'TO%'})
+            # Definimos las métricas para el radar
+            metrics = ['Of.Rtg', 'Df.Rtg', 'TS', 'eFG', 'TS Opp', 'eFG Opp', 'DReb%', 'OReb%', 'FTR', 'Ast%', 'TO%']
+
+            # Creamos dos columnas para mostrar las gráficas en paralelo
+            col1, col2 = st.columns(2)
+
+            if len(selected_teams) == 2:
+                # Seleccionamos equipos en df_temporada
+                team1_id = df_temporada[df_temporada["team_name"] == selected_teams[0]]["team_id"].iloc[0]
+                team2_id = df_temporada[df_temporada["team_name"] == selected_teams[1]]["team_id"].iloc[0]
+
+                percentiles_team1_total = calcular_percentiles(df_temporada, team1_id, metrics)
+                percentiles_team2_total = calcular_percentiles(df_temporada, team2_id, metrics)
+
+                # Jornadas seleccionadas
+                percentiles_team1_jorn = calcular_percentiles(df_liga_jornadas, team1_id, metrics)
+                percentiles_team2_jorn = calcular_percentiles(df_liga_jornadas, team2_id, metrics)
+                           
+                with col1:
+                    # Radar Temporada completa
+                    st.markdown("<h3 style='text-align: center;'>Radar comparativo (Temporada completa)</h3>", unsafe_allow_html=True)
+                    fig_total = radar_comparativo(team1 = selected_teams[0], data1 = percentiles_team1_total, team2= selected_teams[1],
+                                                  data2 = percentiles_team2_total, titulo = "")
+                    st.plotly_chart(fig_total, use_container_width=True, key="fig_total")
+                    guardar_grafico_plotly(fig_total, "fig_total.png")
+
+                with col2:
+                    # Radar Jornadas seleccionadas
+                    st.markdown("<h3 style='text-align: center;'>Radar comparativo (Jornadas seleccionadas)</h3>", unsafe_allow_html=True)
+                    fig_jornadas = radar_comparativo(team1 = selected_teams[0], data1 = percentiles_team1_jorn, team2 = selected_teams[1],
+                                                     data2 = percentiles_team2_jorn, titulo ="")
+                    st.plotly_chart(fig_jornadas, use_container_width=True, key="fig_jornadas")
+                    guardar_grafico_plotly(fig_jornadas, "fig_jornadas.png")
+            
+            if len(selected_teams) == 1:
+                
+                # Seleccionamos equipos en df_temporada
+                team1_id = df_temporada[df_temporada["team_name"] == selected_teams[0]]["team_id"].iloc[0]
+
+                percentiles_team1_total = calcular_percentiles(df_temporada, team1_id, metrics)
+
+                # Jornadas seleccionadas
+                percentiles_team1_jorn = calcular_percentiles(df_liga_jornadas, team1_id, metrics)
+
+                with col1:
+                    # Radar Temporada completa
+                    st.markdown("<h3 style='text-align: center;'>Radar comparativo (Temporada completa)</h3>", unsafe_allow_html=True)
+                    fig_total = radar_comparativo(team1 = selected_teams[0], data1 = percentiles_team1_total, titulo = "")
+                    st.plotly_chart(fig_total, use_container_width=True)
+
+                with col2:
+                    # Radar Jornadas seleccionadas
+                    st.markdown("<h3 style='text-align: center;'>Radar comparativo (Jornadas seleccionadas)</h3>", unsafe_allow_html=True)
+                    fig_jornadas = radar_comparativo(team1 = selected_teams[0], data1 = percentiles_team1_jorn, titulo ="")
+                    st.plotly_chart(fig_jornadas, use_container_width=True)
+        
+        if len(selected_teams) > 0:              
+            pdf = generate_pdf_pag2("fig_total.png", "fig_jornadas.png", tablas)
+            with open("output_pag2.pdf", "rb") as f:
+                st.download_button("Descargar informe PDF", f, file_name="data/informe_comparador_equipos.pdf")

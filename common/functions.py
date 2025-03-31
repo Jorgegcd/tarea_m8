@@ -223,7 +223,7 @@ def grafica_piramide_equipo(df, equipo, metrics, display = True):
     return fig
 
 # Creamos un donut chart con la distribución de posesiones.
-def grafica_donut_posesiones(df, equipo, categorias, colores = None, display=True):
+def grafica_donut_posesiones(df, equipo, categorias, colores = None):
     
     # Filtrar el DataFrame para el equipo deseado
     df_equipo = df[df["Equipo"] == equipo]
@@ -280,17 +280,12 @@ def grafica_donut_posesiones(df, equipo, categorias, colores = None, display=Tru
     
     # Fijamos el dominio para que el donut siempre tenga centro (0.5,0.5) y dimensiones fijas.
     fig.update_traces(domain={'x': [0.05, 0.95], 'y': [0.05, 0.95]})
-    
-    # Si display es True, muestra la gráfica en Streamlit
-    if display:
-        unique_key = f"donut_chart_{equipo}_{'_'.join(categorias)}_{uuid.uuid4().hex}"
-        st.plotly_chart(fig, use_container_width=True, key = unique_key)
 
     # Retorna la figura (para poder exportarla luego en el PDF)
     return fig
 
 # Generamos una función para el radar comparativo
-def grafica_radar_comparativo(df_selected, df, teams, metrics, display = True):
+def grafica_radar_comparativo(df_selected, df, teams, metrics):
     
     fig = go.Figure()
 
@@ -385,10 +380,6 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics, display = True):
     other_traces = [trace for trace in fig.data if trace.name != "Mediana"]
     fig.data = other_traces + median_trace
     
-    # Si display es True, muestra la gráfica en Streamlit
-    if display is True:
-        st.plotly_chart(fig, use_container_width=True, key = f'radar_{teams}_{metrics}')
-
     # Retorna la figura (para poder exportarla luego en el PDF)
     return fig
 # Generamos función para scatter de eficiencia

@@ -11,32 +11,34 @@ import base64
 import streamlit.components.v1 as components
 from PIL import Image  # Necesario para abrir la imagen como objeto
 
-# Ir al directorio padre (uno por encima de /pages)
+# Indicamos la ruta para mostrar el icono de la liga en la pestaña web
 base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 logo_path = os.path.join(base_path, "images", "logo_aba_2.png") # Ruta para llegar a la carpeta y a la imagen del logo
 
 # Cargamos la imagen del logo como objeto
 logo_image = Image.open(logo_path)
 
-# Configurar la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
+# Configuramos la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
 st.set_page_config(page_title="Comparador total temporada", page_icon=logo_image) # Cambiamos nombre de la página e introducimos el logo de la liga en el explorador
 
+# Introducimos el login para que se cierre si sobrepasa el tiempo o le damos a cerrar estando en la página
 login.generarLogin()
 
+# Indicamos lo que ocurre si usuario es correcto
 if 'usuario' in st.session_state:
 
-    # Crea el engine de conexión a la base de datos MySQL
+    # Creamos el engine de conexión a la base de datos MySQL
     engine = create_engine("mysql+pymysql://jgcornejo:Avellanas9?@localhost:3306/tarea_m8", echo=True)
 
     # Indicamos título de página
     st.markdown(f"<h1 style='text-align: center;'>Comparador de totales de equipos ABA League 2</h1>", unsafe_allow_html=True)
 
-    # Leemos el CSV de advanced data (ajusta la ruta según corresponda)
+    # Leemos el CSV de advanced data para crear los datos de estadística avanzada que utilizaremos
     df = pd.read_csv("data/advanced_data.csv")
 
-    # Primer formulario para seleccionar la temporada
+    # Generamos el primer formulario para seleccionar la temporada
     with st.form("form_temporada"):
-        # Desplegable con las temporadas únicas (por ejemplo, "2022/2023" y "2023/2024")
+        # Desplegable con las temporadas 2022/2023 y 2023/2024 (las que habíamos descargado en el dataset)
         temporadas = sorted(df['season'].unique())
         temporada_seleccionada = st.selectbox("Selecciona la temporada", temporadas)
         submit_temporada = st.form_submit_button("Seleccionar temporada")
@@ -45,12 +47,12 @@ if 'usuario' in st.session_state:
     if submit_temporada:
         st.session_state.selected_season = temporada_seleccionada
 
-    # Solo si se ha seleccionado una temporada, mostramos el desplegable de equipos
+    # Si se ha seleccionado una temporada, mostramos el desplegable de equipos
     if "selected_season" in st.session_state:
         # Filtramos el dataframe para la temporada seleccionada
         df_temporada = df[df['season'] == st.session_state.selected_season]
         
-        # Desplegable múltiple para seleccionar equipos (multiselect)
+        # Creamos desplegable múltiple para seleccionar hasta 2 equipos (multiselect)
         equipos = sorted(df_temporada['team_name'].unique())
         selected_teams = st.multiselect("Selecciona equipos (máximo 2)", equipos)
         
@@ -58,7 +60,7 @@ if 'usuario' in st.session_state:
         if len(selected_teams) > 2:
             st.error("Por favor, selecciona un máximo de 2 equipos.")
         else:
-            # Mostrar los escudos según la cantidad de equipos seleccionados.
+            # Mostramos los escudos según la cantidad de equipos seleccionados.
             logos = []
             # Obtenemos la ruta absoluta usando os.getcwd()
             current_dir = os.getcwd()
@@ -66,16 +68,16 @@ if 'usuario' in st.session_state:
                 # Se asume que en el DataFrame existe la columna 'team_id'
                 team_id = df_temporada.loc[df_temporada['team_name'] == team, 'team_id'].iloc[0]
                 # Construimos la ruta absoluta: images está en la raíz (tarea_m8/images)
-                logo_path = os.path.join(current_dir, "images", "teams", f"{team_id}.png")
+                logo_path = os.path.join(current_dir, "images", "teams", f"{team_id}.png") # Decimos que el nombre de los logos son equivalentes al id y que están en carpeta images
                 logos.append(logo_path)
             
             if logos:
                 if len(logos) == 1:
-                    col = st.columns(1)
+                    col = st.columns(1) # Indicamos que solo haya 1 columna
                     with col[0]:
                         if os.path.exists(logos[0]):
                             with open(logos[0], "rb") as image_file:
-                                encoded_logo = base64.b64encode(image_file.read()).decode()
+                                encoded_logo = base64.b64encode(image_file.read()).decode() # Buscamos el logo según el id
                             st.markdown(
                                 f"""<div style="text-align:center;">
                                 <img src="data:image/png;base64,{encoded_logo}" width="150">
@@ -85,11 +87,11 @@ if 'usuario' in st.session_state:
                         else:
                             st.error(f"No se encontró la imagen: {logos[0]}")
                 elif len(logos) == 2:
-                    cols = st.columns(2)
-                    with cols[0]:
+                    cols = st.columns(2) # Indicamos que se divida en 2 columnas la parte de la página
+                    with cols[0]: # El primer equipo en la primera columna
                         if os.path.exists(logos[0]):
                             with open(logos[0], "rb") as image_file:
-                                encoded_logo = base64.b64encode(image_file.read()).decode()
+                                encoded_logo = base64.b64encode(image_file.read()).decode() # Buscamos el logo según el id del primer equipo
                             st.markdown(
                                 f"""<div style="text-align:center;">
                                 <img src="data:image/png;base64,{encoded_logo}" width="150">
@@ -98,10 +100,10 @@ if 'usuario' in st.session_state:
                             )
                         else:
                             st.error(f"No se encontró la imagen: {logos[0]}")
-                    with cols[1]:
+                    with cols[1]: # El segundo equipo en la segunda columna
                         if os.path.exists(logos[1]):
                             with open(logos[1], "rb") as image_file:
-                                encoded_logo = base64.b64encode(image_file.read()).decode()
+                                encoded_logo = base64.b64encode(image_file.read()).decode() # Buscamos el logo según el id del segundo equipo
                             st.markdown(
                                 f"""<div style="text-align:center;">
                                 <img src="data:image/png;base64,{encoded_logo}" width="150">
@@ -119,6 +121,7 @@ if 'usuario' in st.session_state:
                     st.markdown("<h3 style='text-align: center;'>Promedios por partido equipo</h3>", unsafe_allow_html=True)
                     # Generamos un string con los nombres entre comillas, separados por coma
                     equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
+                    # Generamos el pdf según la base de datos que tenemos para los promedios por partido de los equipos
                     query = f"""
                     SELECT 
                         t.team_name AS "Equipo",
@@ -164,6 +167,7 @@ if 'usuario' in st.session_state:
                     st.markdown("<h3 style='text-align: center;'>Promedios por partido de los rivales</h3>", unsafe_allow_html=True)
                     # Generamos un string con los nombres entre comillas, separados por coma
                     equipos_str = ", ".join([f"'{team}'" for team in selected_teams])
+                    # Generamos el pdf según la base de datos que tenemos para los promedios por partido de los rivales
                     query = f"""
                     SELECT 
                         t.team_name AS "Equipo",
@@ -205,6 +209,7 @@ if 'usuario' in st.session_state:
                     # Mostramos la tabla en Streamlit
                     st.dataframe(styled_sql_opp)
             
+            # Valoramos si tenemos dos equipos
             if len(selected_teams) == 2:
                 # Creamos dos columnas para mostrar las gráficas en paralelo
                 col1, col2 = st.columns(2)
@@ -215,22 +220,23 @@ if 'usuario' in st.session_state:
                 
                 with col1:
                     
-                    # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
+                    # Definimos las métricas que deseas comparar, con los nombres indicados en la consulta SQL
                     metrics = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
                     
-                    # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                    # Llamamos a la función de la gráfica de pirámide de 2 equipos pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Comparación promedios ataque</h3>", unsafe_allow_html=True)
                     fig_piramide = grafica_metricas_comparacion(df_sql_team, equipo_left, equipo_right, metrics)
                 
                 with col2:
-                    # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
+                    # Definimos las métricas que deseas comparar, con los nombres indicados en la consulta SQL
                     metrics = ["Puntos recibidos", "T2 Porc rival", "T3 Porc rival", "TC Porc rival", "TL Porc rival", "Reb of rival",
                             "Reb def rival", "Ast rival", "Robos rival", "Tapones rival", "Pérdidas rival"]  # Ajusta según tus necesidades
                     
-                    # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                    # Llamamos a la función de pirámide de 2 equipos pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Comparación promedios defensa</h3>", unsafe_allow_html=True)
                     fig_piramide = grafica_metricas_comparacion(df_sql_opp, equipo_left, equipo_right, metrics)
             
+            # Valoramos si tenemos un único equipo
             elif len(selected_teams) == 1:
                 # Creamos dos columnas para mostrar las gráficas en paralelo
                 col1, col2 = st.columns(2)
@@ -240,24 +246,24 @@ if 'usuario' in st.session_state:
 
                 with col1:
                     
-                    # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
+                    # Definimos las métricas que deseas comparar, con los nombres indicados en la consulta SQL
                     metrics = ["Puntos", "T2 Porc", "T3 Porc", "TC Porc", "TL Porc", "Reb of", "Reb def", "Ast", "Robos", "Tapones", "Pérdidas"]
                     
-                    # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                    # Llamamos a la función de pirámide de 1 único equipo pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Promedios ataque</h3>", unsafe_allow_html=True)
                     fig_piramide = grafica_piramide_equipo(df_sql_team, equipo, metrics)
                 
                 with col2:
                     
-                    # Define las métricas que deseas comparar (deben coincidir con los alias de la consulta SQL)
+                    # Definimos las métricas que deseas comparar, con los nombres indicados en la consulta SQL
                     metrics = ["Puntos recibidos", "T2 Porc rival", "T3 Porc rival", "TC Porc rival", "TL Porc rival", "Reb of rival",
                             "Reb def rival", "Ast rival", "Robos rival", "Tapones rival", "Pérdidas rival"]  # Ajusta según tus necesidades
                     
-                    # Llamamos a la función de la gráfica, pasando el DataFrame original de la consulta
+                    # Llamamos a la función de pirámide de 1 único equipo pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Promedios defensa</h3>", unsafe_allow_html=True)
                     fig_piramide = grafica_piramide_equipo(df_sql_opp, equipo, metrics)
 
-            # Mostrar la tabla filtrada con los datos de los equipos seleccionados
+            # Mostramos la tabla filtrada con los datos de los equipos seleccionados
             if len(selected_teams) > 0:
                 # Filtramos el dataframe para los equipos seleccionados
                 df_filtrado = df_temporada[df_temporada['team_name'].isin(selected_teams)]
@@ -270,7 +276,7 @@ if 'usuario' in st.session_state:
                 
                 with col1:
                     st.markdown("<h3 style='text-align: center;'>Estadísticas avanzadas ataque</h3>", unsafe_allow_html=True)
-                    # Para formatear los números, obtenemos las columnas numéricas y aplicamos formato
+                    # Para formatear los números, obtenemos las columnas numéricas de la tabla de ataque y aplicamos formato
                     numeric_cols = tabla_ataque.select_dtypes(include=['number']).columns
                     formato = {col: "{:.2f}" for col in numeric_cols}
                     styled_tabla_ataque = tabla_ataque.style.format(formato)
@@ -278,6 +284,7 @@ if 'usuario' in st.session_state:
                 
                 with col2:
                     st.markdown("<h3 style='text-align: center;'>Estadísticas avanzadas defensa</h3>", unsafe_allow_html=True)
+                    # Para formatear los números, obtenemos las columnas numéricas de la tabla de defensa y aplicamos formato
                     numeric_cols = tabla_defensa.select_dtypes(include=['number']).columns
                     formato = {col: "{:.2f}" for col in numeric_cols}
                     styled_tabla_defensa = tabla_defensa.style.format(formato)
@@ -292,106 +299,164 @@ if 'usuario' in st.session_state:
                 col1, col2, col3 = st.columns(3, vertical_alignment="top")
                 
                 with col1:
+                    # Si hay 2 equipos seleccionados, incluimos lo siguiente en la columna 1
                     if len(selected_teams) == 2:
                         # Asumimos que la lista selected_teams respeta el orden de selección
                         equipo_left = selected_teams[0]
                         equipo_right = selected_teams[1]
                         st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones {equipo_left} </h3>", unsafe_allow_html=True)
-                        
+                        # Indicamos las métricas a incluir en la gráfica radar
                         posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
-                        # Por ejemplo, si querés asignar colores específicos:
+                        # Filtramos los colores azules para la gráfica de donut
                         colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
-                        grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores=colores_azules, display = True)
-                        
+                        # Hacemos gráfica donut para el primer equipo de sus datos
+                        fig_donut = grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores=colores_azules)
+                        st.plotly_chart(fig_donut, use_container_width=True, key = 'donut_comparativo_ataque')
 
+                    # Si hay 1 equipo seleccionado, incluimos lo siguiente en la columna 1
                     elif len(selected_teams) == 1:
                         equipo = selected_teams[0]
                         st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones {equipo} </h3>", unsafe_allow_html=True)
+                        # Indicamos las métricas a incluir en la gráfica radar
                         posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
-                        # Por ejemplo, si querés asignar colores específicos:
+                        # Filtramos los colores azules para la gráfica de donut
                         colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
-                        fig_donut = grafica_donut_posesiones(df_sql_team, equipo, posesiones_equipo, colores=colores_azules, display = False)
+                        # Hacemos gráfica donut para el equipo seleccionado de sus datos
+                        fig_donut = grafica_donut_posesiones(df_sql_team, equipo, posesiones_equipo, colores=colores_azules)
+                        st.plotly_chart(fig_donut, use_container_width=True, key = 'donut_individual_1_ataque')
                         
                 with col2:
+                    # Si hay 2 equipos seleccionados, incluimos lo siguiente en la columna 2
                     if len(selected_teams) == 2:
                         # Asumimos que la lista selected_teams respeta el orden de selección
                         equipo_left = selected_teams[0]
                         equipo_right = selected_teams[1]
                         st.markdown("<h3 style='text-align: center;'>Comparación estadísticas avanzadas equipo en ataque</h3>", unsafe_allow_html=True)
+                        # Generamos el dataframe para el radar de ataque
                         df_radar_ataque = df_temporada.copy()
+                        # Renombramos las columnas
                         df_radar_ataque = df_radar_ataque.rename(columns = {'ortg':'Of. Rtg', 'efg%': 'eFG%', 'ts%':'TS%', 'ftr':'FT Rate','vol2p':'Vol. T2%',
                                                                             'vol3p':'Vol. T3%', 'or%':'Of. Reb%', 'ast%':'Ast%', 'to%':'Pérdidas%',
                                                                             'four_factors':'Four Factors'})
+                        # Filtramos el dataframe entre los equipos seleccionados
+                        df_selected = df_radar_ataque[df_radar_ataque['team_name'].isin(selected_teams)]
+                        
+                        # Escogemos las métricas para el radar
+                        est_ataque = ['Of. Rtg', 'eFG%', 'TS%', 'FT Rate', 'Vol. T2%', 'Vol. T3%', 'Of. Reb%', 'Ast%', 'Pérdidas%', 'Four Factors']
+                        # Indicamos los equipos a introducir en el radar
+                        teams = [equipo_left, equipo_right]
+                        # Generamos la gráfica radar comparativa
+                        fig_radar_1 = grafica_radar_comparativo(df_selected, df_radar_ataque, teams, metrics = est_ataque)
+                        st.plotly_chart(fig_radar_1, use_container_width=True, key = 'radar_1')
+
+                    # Si hay 1 equipo seleccionado, incluimos lo siguiente en la columna 2
+                    elif len(selected_teams) == 1:
+                        # Indicamos que se selecciona el único equipo que hay
+                        equipo_left = selected_teams[0]
+                        st.markdown("<h3 style='text-align: center;'>Estadísticas avanzadas equipo en ataque</h3>", unsafe_allow_html=True)
+                        # Generamos el dataframe para el radar de ataque
+                        df_radar_ataque = df_temporada.copy()
+                        # Renombramos las columnas
+                        df_radar_ataque = df_radar_ataque.rename(columns = {'ortg':'Of. Rtg', 'efg%': 'eFG%', 'ts%':'TS%', 'ftr':'FT Rate','vol2p':'Vol. T2%',
+                                                                            'vol3p':'Vol. T3%', 'or%':'Of. Reb%', 'ast%':'Ast%', 'to%':'Pérdidas%',
+                                                                            'four_factors':'Four Factors'})
+                        # Filtramos el dataframe entre los equipos seleccionados
                         df_selected = df_radar_ataque[df_radar_ataque['team_name'].isin(selected_teams)]
                         
                         # Asumimos que la lista selected_teams respeta el orden de selección
                         est_ataque = ['Of. Rtg', 'eFG%', 'TS%', 'FT Rate', 'Vol. T2%', 'Vol. T3%', 'Of. Reb%', 'Ast%', 'Pérdidas%', 'Four Factors']
-                        teams = [equipo_left, equipo_right]
-                        grafica_radar_comparativo(df_selected, df_radar_ataque, teams, metrics = est_ataque, display = True)
-
-                    elif len(selected_teams) == 1:
-                        equipo_left = selected_teams[0]
-                        st.markdown("<h3 style='text-align: center;'>Estadísticas equipo</h3>", unsafe_allow_html=True)
-                        df_selected = df_temporada[df_temporada['team_name'].isin(selected_teams)]
-                        est_ataque = ['ortg', 'efg%', 'or%', 'ts%']
                         teams = [equipo_left]
-                        grafica_radar_comparativo(df_selected, df_temporada, teams, metrics = est_ataque)
+                        # Generamos la gráfica radar comparativa
+                        fig_radar_1 = grafica_radar_comparativo(df_selected, df_radar_ataque, teams, metrics = est_ataque)
+                        st.plotly_chart(fig_radar_1, use_container_width=True, key = 'radar_1')
                 
                 with col3:
+                    # Si hay 2 equipos seleccionados, incluimos lo siguiente en la columna 3
                     if len(selected_teams) == 2:
                         # Asumimos que la lista selected_teams respeta el orden de selección
                         equipo_left = selected_teams[0]
                         equipo_right = selected_teams[1]
                         st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones {equipo_right} </h3>", unsafe_allow_html=True)
+                        # Indicamos las métricas a incluir en la gráfica radar
                         posesiones_equipo = ['T2I', 'T3I', 'Pérdidas', 'TLI']
-                        # Por ejemplo, si querés asignar colores específicos:
+                        # Filtramos los colores rojos para la gráfica de donut
                         colores_rojos = ["tomato", "red", "#b11f1f", "#f88686"]
-                        fig_donut_2 = grafica_donut_posesiones(df_sql_team, equipo_right, posesiones_equipo, colores = colores_rojos, display = False)
-                        grafica_donut_posesiones(df_sql_team, equipo_right, posesiones_equipo, colores = colores_rojos, display = True)
+                        # Hacemos gráfica donut para el equipo seleccionado de sus datos
+                        fig_donut_2 = grafica_donut_posesiones(df_sql_team, equipo_right, posesiones_equipo, colores = colores_rojos)
+                        st.plotly_chart(fig_donut_2, use_container_width=True, key = 'donut_comparativo_2_ataque')
+                        
 
                     elif len(selected_teams) == 1:
+                        # Si hay 1 equipo seleccionado, incluimos lo siguiente en la columna 3
                         equipo = selected_teams[0]
                         st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones rivales de {equipo} </h3>", unsafe_allow_html=True)
+                        # Filtramos los colores rojos para la gráfica de donut
                         colores_rojos = ["tomato", "red", "#b11f1f", "#f88686"]
+                        # Indicamos las métricas a incluir en la gráfica radar
                         posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
-                        grafica_donut_posesiones(df_sql_opp, equipo, posesiones_rival, colores = colores_rojos, display = True)
+                        # Hacemos gráfica donut para el equipo seleccionado de sus datos
+                        fig_donut_2 = grafica_donut_posesiones(df_sql_opp, equipo, posesiones_rival, colores = colores_rojos)
+                        st.plotly_chart(fig_donut_2, use_container_width=True, key = 'donut_individual_2_ataque')
                 
+                # Generamos nueva línea para la segunda fila de gráficas
                 col1, col2, col3 = st.columns(3, vertical_alignment="top")
                 
                 with col1:
+                    # Si hay 2 equipos seleccionados, incluimos lo siguiente en la columna 1
                     if len(selected_teams) == 2:
                         # Asumimos que la lista selected_teams respeta el orden de selección
                         equipo_left = selected_teams[0]
                         equipo_right = selected_teams[1]                  
                         st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones rivales de {equipo_left} </h3>", unsafe_allow_html=True)
-                        
+                        # Indicamos las métricas a incluir en la gráfica radar
                         posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
-                        grafica_donut_posesiones(df_sql_opp, equipo_left, posesiones_rival, colores = colores_azules, display = True)
+                        # Hacemos gráfica donut para el equipo seleccionado de sus datos
+                        fig_donut_3 = grafica_donut_posesiones(df_sql_opp, equipo_left, posesiones_rival, colores = colores_azules)
+                        st.plotly_chart(fig_donut_3, use_container_width=True, key = 'donut_comparativo_1_defensa')
 
                 with col2:
+                    # Si hay 2 equipos seleccionados, incluimos lo siguiente en la columna 2
                     if len(selected_teams) == 2:
                         # Asumimos que la lista selected_teams respeta el orden de selección
                         equipo_left = selected_teams[0]
                         equipo_right = selected_teams[1]
                         
                         st.markdown(f"<h3 style='text-align: center;'>Comparación estadísticas avanzadas equipo en defensa</h3>", unsafe_allow_html=True)
+                        
+                        # Generamos el dataframe para el radar de defensa
                         df_radar_defensa = df_temporada.copy()
+                        # Renombramos las columnas
                         df_radar_defensa = df_radar_defensa.rename(columns = {'drtg':'Def. Rtg', 'dr%':'Def. Reb%', 'efg%_opp': 'eFG% Rivales', 'ts%_opp':'TS% Rivales',
                                                                             'ftr_opp':'FT Rate Rivales','vol2p_opp':'Vol. T2% Rivales', 'vol3p_opp':'Vol. T3% Rivales',
                                                                             'ast%_opp':'Ast% Rivales', 'to%_opp':'Pérdidas% Rivales', 'st%':'Robos%',
                                                                             'four_factors_opp':'Four Factors Rivales'})
-                        
+                        # Filtramos el dataframe entre los equipos seleccionados
                         df_selected = df_radar_defensa[df_radar_defensa['team_name'].isin(selected_teams)]
+                        # Escogemos las métricas para el radar
                         est_defensa = ['Def. Rtg', 'Def. Reb%', 'eFG% Rivales', 'TS% Rivales', 'FT Rate Rivales', 'Vol. T2% Rivales', 'Vol. T3% Rivales', 'Ast% Rivales',
                                     'Pérdidas% Rivales', 'Robos%', 'Four Factors Rivales']
-                        
-                        grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa, display = True)
+                        # Generamos la gráfica radar comparativa
+                        fig_radar_2 = grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa)
+                        st.plotly_chart(fig_radar_2, use_container_width=True, key = 'radar_2')
 
                     elif len(selected_teams) == 1:
+                        # Si hay 1 equipo seleccionado, incluimos lo siguiente en la columna 2
                         equipo_left = selected_teams[0]
                         st.markdown("<h3 style='text-align: center;'>Estadísticas rivales</h3>", unsafe_allow_html=True)
-                        est_defensa = ['drtg', 'dr%', 'ts%_opp', 'ast%_opp']
-                        grafica_radar_comparativo(df_selected, df_temporada, teams, metrics = est_defensa, display = True)
+                        # Generamos el dataframe para el radar de defensa
+                        df_radar_defensa = df_temporada.copy()
+                        # Renombramos las columnas
+                        df_radar_defensa = df_radar_defensa.rename(columns = {'drtg':'Def. Rtg', 'dr%':'Def. Reb%', 'efg%_opp': 'eFG% Rivales', 'ts%_opp':'TS% Rivales',
+                                                                            'ftr_opp':'FT Rate Rivales','vol2p_opp':'Vol. T2% Rivales', 'vol3p_opp':'Vol. T3% Rivales',
+                                                                            'ast%_opp':'Ast% Rivales', 'to%_opp':'Pérdidas% Rivales', 'st%':'Robos%',
+                                                                            'four_factors_opp':'Four Factors Rivales'})
+                        # Filtramos el dataframe entre los equipos seleccionados
+                        df_selected = df_radar_defensa[df_radar_defensa['team_name'].isin(selected_teams)]
+                        # Escogemos las métricas para el radar
+                        est_defensa = ['Def. Rtg', 'Def. Reb%', 'eFG% Rivales', 'TS% Rivales', 'FT Rate Rivales', 'Vol. T2% Rivales', 'Vol. T3% Rivales', 'Ast% Rivales',
+                                    'Pérdidas% Rivales', 'Robos%', 'Four Factors Rivales']
+                        fig_radar_2 = grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa)
+                        st.plotly_chart(fig_radar_2, use_container_width=True, key = 'radar_2')
                 
                 with col3:
                     if len(selected_teams) == 2:
@@ -399,10 +464,13 @@ if 'usuario' in st.session_state:
                         equipo_left = selected_teams[0]
                         equipo_right = selected_teams[1]
                         st.markdown(f"<h3 style='text-align: center;'>Distribución posesiones rivales de {equipo_right} </h3>", unsafe_allow_html=True)
-                            
+                        # Indicamos las métricas a incluir en la gráfica radar    
                         posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
-                        grafica_donut_posesiones(df_sql_opp, equipo_right, posesiones_rival, colores = colores_rojos, display = True)
+                        # Hacemos gráfica donut para el equipo seleccionado de sus datos
+                        fig_donut_4 = grafica_donut_posesiones(df_sql_opp, equipo_right, posesiones_rival, colores = colores_rojos)
+                        st.plotly_chart(fig_donut_4, use_container_width=True, key = 'donut_comparativo_2_defensa')
                 
+            # Si es mayor que 0 los equipos seleccionados, generamos pdf y botón de página
             if len(selected_teams) > 0:
                 st.button('Imprimir Página')
 

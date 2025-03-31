@@ -13,7 +13,7 @@ import streamlit.components.v1 as components
 from fpdf import FPDF
 from PIL import Image  # Necesario para abrir la imagen como objeto
 
-# Ir al directorio padre (uno por encima de /pages)
+# Indicamos la ruta para mostrar el icono de la liga en la pestaña web
 base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 logo_path = os.path.join(base_path, "images", "logo_aba_2.png") # Ruta para llegar a la carpeta y a la imagen del logo
 
@@ -21,8 +21,9 @@ logo_path = os.path.join(base_path, "images", "logo_aba_2.png") # Ruta para lleg
 logo_image = Image.open(logo_path)
 
 # Configurar la página para que el botón de navegación vaya hasta el principio cuando se abre la página.
-st.set_page_config(page_title="Comparador totales equipos", page_icon=logo_image) # Cambiamos nombre de la página e introducimos el logo de la liga en el explorador
+st.set_page_config(page_title="Comparador por jornadas", page_icon=logo_image) # Cambiamos nombre de la página e introducimos el logo de la liga en el explorador
 
+# Introducimos el login para que se cierre si sobrepasa el tiempo o le damos a cerrar estando en la página
 login.generarLogin()
 
 if 'usuario' in st.session_state:
@@ -36,12 +37,12 @@ if 'usuario' in st.session_state:
     # Indicamos título de página
     st.markdown(f"<h1 style='text-align: center;'>Comparador por jornadas y totales de equipos ABA League 2</h1>", unsafe_allow_html=True)
 
-    # Leemos el CSV de advanced data (ajusta la ruta según corresponda)
+    # Leemos el CSV de advanced data para crear los datos de estadística avanzada que utilizaremos
     df = pd.read_csv("data/advanced_data.csv")
 
-    # Primer formulario para seleccionar la temporada
+    # Generamos el primer formulario para seleccionar la temporada
     with st.form("form_temporada"):
-        # Desplegable con las temporadas únicas (por ejemplo, "2022/2023" y "2023/2024")
+        # Desplegable con las temporadas 2022/2023 y 2023/2024 (las que habíamos descargado en el dataset)
         temporadas = sorted(df['season'].unique())
         temporada_seleccionada = st.selectbox("Selecciona la temporada", temporadas)
         submit_temporada = st.form_submit_button("Seleccionar temporada")
@@ -50,12 +51,12 @@ if 'usuario' in st.session_state:
     if submit_temporada:
         st.session_state.selected_season = temporada_seleccionada
 
-    # Solo si se ha seleccionado una temporada, mostramos el desplegable de equipos
+    # Si se ha seleccionado una temporada, mostramos el desplegable de equipos
     if "selected_season" in st.session_state:
         # Filtramos el dataframe para la temporada seleccionada
         df_temporada = df[df['season'] == st.session_state.selected_season]
         
-        # Desplegable múltiple para seleccionar equipos (multiselect)
+        # Creamos desplegable múltiple para seleccionar hasta 2 equipos (multiselect)
         equipos = sorted(df_temporada['team_name'].unique())
         selected_teams = st.multiselect("Selecciona equipos (máximo 2)", equipos)
         
@@ -63,7 +64,7 @@ if 'usuario' in st.session_state:
         if len(selected_teams) > 2:
             st.error("Por favor, selecciona un máximo de 2 equipos.")
         else:
-            # Creamos el slider SOLO si hay datos cargados
+            # Creamos el slider de las jornadas a analizar solo si hay datos cargados
             if not df_jornadas.empty:
                 jornadas_disponibles = sorted(df_jornadas['week'].unique())
                 min_jornada = int(min(jornadas_disponibles))
@@ -76,7 +77,7 @@ if 'usuario' in st.session_state:
                     value=(min_jornada, max_jornada)
                 )
 
-                # Guardamos el filtro en session_state (opcional)
+                # Guardamos el filtro en session_state
                 st.session_state.jornada_inicio = jornada_inicio
                 st.session_state.jornada_fin = jornada_fin
 
@@ -85,7 +86,7 @@ if 'usuario' in st.session_state:
                     (df_jornadas['week'] >= jornada_inicio) & (df_jornadas['week'] <= jornada_fin)
                 ]
 
-            # Mostrar los escudos según la cantidad de equipos seleccionados.
+            # Mostramos los escudos según la cantidad de equipos seleccionados.
             logos = []
             # Obtenemos la ruta absoluta usando os.getcwd()
             current_dir = os.getcwd()
@@ -93,16 +94,16 @@ if 'usuario' in st.session_state:
                 # Se asume que en el DataFrame existe la columna 'team_id'
                 team_id = df_temporada.loc[df_temporada['team_name'] == team, 'team_id'].iloc[0]
                 # Construimos la ruta absoluta: images está en la raíz (tarea_m8/images)
-                logo_path = os.path.join(current_dir, "images", "teams", f"{team_id}.png")
+                logo_path = os.path.join(current_dir, "images", "teams", f"{team_id}.png") # Decimos que el nombre de los logos son equivalentes al id y que están en carpeta images
                 logos.append(logo_path)
             
             if logos:
                 if len(logos) == 1:
-                    col = st.columns(1)
+                    col = st.columns(1) # Indicamos que si solo hay un equipo, solo haya 1 columna
                     with col[0]:
                         if os.path.exists(logos[0]):
                             with open(logos[0], "rb") as image_file:
-                                encoded_logo = base64.b64encode(image_file.read()).decode()
+                                encoded_logo = base64.b64encode(image_file.read()).decode() # Buscamos el logo según el id
                             st.markdown(
                                 f"""<div style="text-align:center;">
                                 <img src="data:image/png;base64,{encoded_logo}" width="150">
@@ -112,11 +113,11 @@ if 'usuario' in st.session_state:
                         else:
                             st.error(f"No se encontró la imagen: {logos[0]}")
                 elif len(logos) == 2:
-                    cols = st.columns(2)
-                    with cols[0]:
+                    cols = st.columns(2) # Indicamos que si hay dos equipos, haya 2 columnas
+                    with cols[0]: # El primer equipo en la primera columna
                         if os.path.exists(logos[0]):
                             with open(logos[0], "rb") as image_file:
-                                encoded_logo = base64.b64encode(image_file.read()).decode()
+                                encoded_logo = base64.b64encode(image_file.read()).decode() # Buscamos el logo según el id del primer equipo
                             st.markdown(
                                 f"""<div style="text-align:center;">
                                 <img src="data:image/png;base64,{encoded_logo}" width="150">
@@ -125,10 +126,10 @@ if 'usuario' in st.session_state:
                             )
                         else:
                             st.error(f"No se encontró la imagen: {logos[0]}")
-                    with cols[1]:
+                    with cols[1]: # El segundo equipo en la segunda columna
                         if os.path.exists(logos[1]):
                             with open(logos[1], "rb") as image_file:
-                                encoded_logo = base64.b64encode(image_file.read()).decode()
+                                encoded_logo = base64.b64encode(image_file.read()).decode() # Buscamos el logo según el id del segundo equipo
                             st.markdown(
                                 f"""<div style="text-align:center;">
                                 <img src="data:image/png;base64,{encoded_logo}" width="150">
@@ -142,7 +143,7 @@ if 'usuario' in st.session_state:
                 # Creamos seis columnas para mostrar las fichas en paralelo
                 col1, col2, col3, col4, col5, col6 = st.columns(6)
 
-                # Diccionario para guardar métricas por equipo
+                # Creamos un diccionario para guardar métricas por equipo
                 equipos_data = {}
                 
                 for team in selected_teams:
@@ -160,12 +161,12 @@ if 'usuario' in st.session_state:
                         st.warning("No hay partidos para este equipo en el rango seleccionado.")
                         continue
 
-                    # Victories & defeats
+                    # Contamos las victorias y derrotas
                     victorias = (df_team_jornadas['w/l'].str.upper() == 'W').sum()
                     derrotas = (df_team_jornadas['w/l'].str.upper() == 'L').sum()
                     partidos_jornadas = len(df_team_jornadas)
 
-                    # Suma de estadísticas necesarias
+                    # Generamos las variables de la suma de estadísticas necesarias
                     fga = df_team_jornadas['fga'].sum()
                     fta = df_team_jornadas['fta'].sum()
                     to = df_team_jornadas['to'].sum()
@@ -173,14 +174,14 @@ if 'usuario' in st.session_state:
                     pts = df_team_jornadas['pts'].sum()
                     pts_opp = df_team_jornadas['pts_opp'].sum()
 
-                    # Filtrar puntos reales desde la BBDD (según jornada y equipo)
+                    # Filtramos los puntos reales desde la BBDD según jornada y equipo
                     poss = 0.96*(fga + 0.44 * fta - oreb + to)
 
                     # Calculamos la eficiencia ofensiva y defensiva del equipo seleccionado
                     ortg_jornadas = (pts / poss) * 100 if poss > 0 else 0
                     drtg_jornadas = (pts_opp / poss) * 100 if poss > 0 else 0
 
-                    # Total temporada
+                    # Generamos los totales de la temporada
                     df_total = df[(df['team_name'] == team) & (df['season'] == st.session_state.selected_season)]
                     ortg_tot = df_total['ortg'].iloc[0]
                     drtg_tot = df_total['drtg'].iloc[0]
@@ -198,9 +199,11 @@ if 'usuario' in st.session_state:
                         'partidos': partidos_jornadas
                     }
                 
+                # Generamos las cajas para las métricas según la función que hay en el archivo funciones y las métricas definidas previamente
                 if len(selected_teams) >= 1:
                     team1 = selected_teams[0]
                     data = equipos_data[team1]
+                    # Para 1 o 2 equipos seleccionados introducimos métricas en las 3 primeras columnas
                     with col1:
                         st.markdown("<br>", unsafe_allow_html=True)
                         caja_metricas("Eficiencia Ofensiva (Total Liga)", f"{data['ortg_tot']:.2f}")
@@ -220,6 +223,7 @@ if 'usuario' in st.session_state:
                 if len(selected_teams) == 2:
                     team2 = selected_teams[1]
                     data = equipos_data[team2]
+                    # Para 2 equipos seleccionados introducimos otras 3 métricas en las siguientes columnas
                     with col4:
                         st.markdown("<br>", unsafe_allow_html=True)
                         caja_metricas("Eficiencia Ofensiva (Total Liga)", f"{data['ortg_tot']:.2f}")
@@ -237,10 +241,12 @@ if 'usuario' in st.session_state:
                         caja_metricas("Partidos (Victorias/ Derrotas)", f"{data['partidos']} ({data['victorias']}/{data['derrotas']})")
                         st.markdown("<br>", unsafe_allow_html=True)
 
+                # Para más de 1 equipo (1 o 2) realizamos lo siguiente
                 if len(selected_teams) >= 1:
                     tablas = {}
 
                     for team in selected_teams:
+                        # Seleccionamos los datos de los equipos según id y temporada, mostrando también el nombre
                         df_total = df_jornadas[(df_jornadas['team_id'] == df_temporada[df_temporada['team_name'] == team]['team_id'].iloc[0]) &
                                             (df_jornadas['season'] == st.session_state.selected_season)]
                         
@@ -249,6 +255,7 @@ if 'usuario' in st.session_state:
                             (df_jornadas_filtrado['season'] == st.session_state.selected_season)
                         ]
 
+                        # Decidimos las métricas según la función que tenemos en el archivo functions_pag2
                         metrics_total = calcular_metricas(df_total, team)
                         metrics_filtrado = calcular_metricas(df_filtrado, team)
 
@@ -264,8 +271,7 @@ if 'usuario' in st.session_state:
                         st.markdown(f"<h4 style='text-align: center;'>Estadísticas globales temporada y selección de jornadas - {team}</h4>", unsafe_allow_html=True)
                         st.dataframe(tablas[team].set_index('Métrica'), use_container_width=True)
                     
-                    # Gráficas de evolución de resultados
-
+                    # Realizamos las gráficas de evolución de resultados
                     for team in selected_teams:
                         st.markdown(
                             f"<h4 style='text-align: center;'>Evolución partidos temporada {st.session_state.selected_season} {team}</h4>",
@@ -274,23 +280,24 @@ if 'usuario' in st.session_state:
 
                         team_id = df_temporada[df_temporada['team_name'] == team]['team_id'].iloc[0]
 
-                        # Filtramos SOLO los partidos de ese equipo
+                        # Filtramos solo los partidos de ese equipo
                         df_team_jornadas_total = df_jornadas[(df_jornadas['team_id'] == team_id) &
                             (df_jornadas['season'] == st.session_state.selected_season)
                         ].sort_values("week")
-
+                        
+                        # Mostramos la gráfica de evolución temporal de resultados
                         fig = grafica_evolucion_resultados(df_team_jornadas_total, team, df_temporada)
                         st.plotly_chart(fig, use_container_width=True)
-                    
-                if len(selected_teams) >= 1:
 
+                # Si tenemos 1 o 2 equipos, generamos 2 columnas  
+                if len(selected_teams) >= 1:
                     col1, col2 = st.columns(2)
 
-                # Diccionario para guardar métricas por equipo
+                # Generamos un diccionario para guardar métricas por equipo
                 equipos_data = {}
                 
                 for team in selected_teams:
-                    # Obtenemos el ID del equipo
+                    # Obtenemos el id del equipo
                     team_id = df_temporada[df_temporada['team_name'] == team]['team_id'].iloc[0]
 
                     # Filtramos las jornadas del equipo
@@ -304,7 +311,7 @@ if 'usuario' in st.session_state:
                         st.warning("No hay partidos para este equipo en el rango seleccionado.")
                         continue
 
-                    # Victories & defeats
+                    # Generamos las variables de victorias y derrotas del dataframe procedente de la BBDD
                     victorias = (df_team_jornadas['w/l'].str.upper() == 'W').sum()
                     derrotas = (df_team_jornadas['w/l'].str.upper() == 'L').sum()
                     partidos_jornadas = len(df_team_jornadas)
@@ -318,7 +325,7 @@ if 'usuario' in st.session_state:
                         if df_team.empty:
                             continue
                     
-                        # Cálculamos la suma de las estadísticas
+                        # Cálculamos la suma de las estadísticas como métrica
                         fgm = df_team['fgm'].sum()
                         fga = df_team['fga'].sum()
                         fg3m = df_team['fg3m'].sum()
@@ -339,7 +346,7 @@ if 'usuario' in st.session_state:
                         # Calculamos las posesiones
                         poss = 0.96*(fga + 0.44 * fta - oreb + to)
 
-                        # Cálculo de métricas
+                        # Cálculamos métricas que faltan y consideramos necesarias (Eficiencia ofensiva, defensiva, tiro de campo eficiente...)
                         ortg_jornadas = (pts / poss) * 100 if poss > 0 else 0
                         drtg_jornadas = (pts_opp / poss) * 100 if poss > 0 else 0
                         efg_jornadas = (fgm + (0.5 * fg3m)) / fga
@@ -382,20 +389,20 @@ if 'usuario' in st.session_state:
                 col1, col2 = st.columns(2)
 
                 if len(selected_teams) == 2:
-                    # Seleccionamos equipos en df_temporada
+                    # Seleccionamos equipos del dataframe de df_temporada
                     team1_id = df_temporada[df_temporada["team_name"] == selected_teams[0]]["team_id"].iloc[0]
                     team2_id = df_temporada[df_temporada["team_name"] == selected_teams[1]]["team_id"].iloc[0]
 
-                    # Calculamos percentiles totales de temporada
+                    # Calculamos percentiles totales para dataframe de temporada
                     percentiles_team1_total = calcular_percentiles(df_temporada, team1_id, metrics)
                     percentiles_team2_total = calcular_percentiles(df_temporada, team2_id, metrics)
 
-                    # Calculamos percentiles en jornadas seleccionadas
+                    # Calculamos percentiles para dataframe de jornadas seleccionadas
                     percentiles_team1_jorn = calcular_percentiles(df_liga_jornadas, team1_id, metrics)
                     percentiles_team2_jorn = calcular_percentiles(df_liga_jornadas, team2_id, metrics)
                             
                     with col1:
-                        # Radar Temporada completa
+                        # Generamos radar temporada completa
                         st.markdown("<h3 style='text-align: center;'>Radar comparativo (Temporada completa)</h3>", unsafe_allow_html=True)
                         fig_total = radar_comparativo(team1 = selected_teams[0], data1 = percentiles_team1_total, team2= selected_teams[1],
                                                     data2 = percentiles_team2_total, titulo = "")
@@ -403,7 +410,7 @@ if 'usuario' in st.session_state:
                         
 
                     with col2:
-                        # Radar Jornadas seleccionadas
+                        # Generamos radar jornadas seleccionadas
                         st.markdown("<h3 style='text-align: center;'>Radar comparativo (Jornadas seleccionadas)</h3>", unsafe_allow_html=True)
                         fig_jornadas = radar_comparativo(team1 = selected_teams[0], data1 = percentiles_team1_jorn, team2 = selected_teams[1],
                                                         data2 = percentiles_team2_jorn, titulo ="")
@@ -417,17 +424,17 @@ if 'usuario' in st.session_state:
                     # Calculamos percentiles del equipo seleccionado en df_temporada
                     percentiles_team1_total = calcular_percentiles(df_temporada, team1_id, metrics)
 
-                    # Jornadas seleccionadas
+                    # Calculamos percentiles del equipo seleccionado en las jornadas seleccionadas
                     percentiles_team1_jorn = calcular_percentiles(df_liga_jornadas, team1_id, metrics)
 
                     with col1:
-                        # Radar Temporada completa
+                        # Generamos radar temporada completa
                         st.markdown("<h3 style='text-align: center;'>Radar comparativo (Temporada completa)</h3>", unsafe_allow_html=True)
                         fig_total = radar_comparativo(team1 = selected_teams[0], data1 = percentiles_team1_total, titulo = "")
                         st.plotly_chart(fig_total, use_container_width=True)
 
                     with col2:
-                        # Radar Jornadas seleccionadas
+                        # Generamos radar de jornadas seleccionadas
                         st.markdown("<h3 style='text-align: center;'>Radar comparativo (Jornadas seleccionadas)</h3>", unsafe_allow_html=True)
                         fig_jornadas = radar_comparativo(team1 = selected_teams[0], data1 = percentiles_team1_jorn, titulo ="")
                         st.plotly_chart(fig_jornadas, use_container_width=True)

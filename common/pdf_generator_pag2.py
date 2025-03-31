@@ -37,8 +37,8 @@ def generate_pdf_pag2(page_title, selected_teams, season, df_temporada, data_tea
             self.set_font(self.myfont, "", 16) # Tipo de fuente
             
             self.set_y(10)  # Posición vertical del texto
-            self.set_x((self.w - self.get_string_width("Tarea Módulo 8:Página 1")) / 2)  # Centramos horizontalmente el título en el encabezado
-            self.cell(55,3, "Tarea Módulo 8:Página 1", border=0, align="C")
+            self.set_x((self.w - self.get_string_width("Tarea Módulo 8:Página 2")) / 2)  # Centramos horizontalmente el título en el encabezado
+            self.cell(55,3, "Tarea Módulo 8:Página 2", border=0, align="C")
 
             # Designamos la fuente que queremos: Arial 8
             self.set_text_color(67, 142, 189) # Color de la fuente

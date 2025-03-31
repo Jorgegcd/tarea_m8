@@ -438,3 +438,40 @@ if 'usuario' in st.session_state:
                         st.markdown("<h3 style='text-align: center;'>Radar comparativo (Jornadas seleccionadas)</h3>", unsafe_allow_html=True)
                         fig_jornadas = radar_comparativo(team1 = selected_teams[0], data1 = percentiles_team1_jorn, titulo ="")
                         st.plotly_chart(fig_jornadas, use_container_width=True)
+            
+            # Si es mayor que 0 los equipos seleccionados, generamos pdf y botón de página
+            if len(selected_teams) > 0:
+                st.button('Imprimir Página')
+
+                if st.button("Generar PDF"):
+
+                    if not os.path.exists('temp'):
+                        os.makedirs('temp')
+                    
+                    for team in selected_teams:
+                        # Seleccionamos los datos de los equipos según id y temporada, mostrando también el nombre
+                        df_total = df_jornadas[(df_jornadas['team_id'] == df_temporada[df_temporada['team_name'] == team]['team_id'].iloc[0]) &
+                                            (df_jornadas['season'] == st.session_state.selected_season)]
+                        
+                        df_filtrado = df_jornadas_filtrado[
+                            (df_jornadas_filtrado['team_id'] == df_temporada[df_temporada['team_name'] == team]['team_id'].iloc[0]) &
+                            (df_jornadas_filtrado['season'] == st.session_state.selected_season)
+                        ]
+
+                        # Decidimos las métricas según la función que tenemos en el archivo functions_pag2
+                        metrics_total = calcular_metricas(df_total, team)
+                        metrics_filtrado = calcular_metricas(df_filtrado, team)
+
+                        # Creamos DataFrame para mostrar
+                        df_metrics = pd.DataFrame({
+                            'Métrica': list(metrics_total.keys()),
+                            'Temporada completa': list(metrics_total.values()),
+                            'Jornadas seleccionadas': list(metrics_filtrado.values())
+                            })
+
+                        tablas[team] = df_metrics
+                    
+                    # VER SI BIEN HECHO Y SACAR LOS VALORES DE LAS TABLAS COMO data_team_1 y data_team_2
+                    
+                    pdf = generate_pdf_pag2 (page_title = 'Comparador por jornadas y totales de equipos ABA League 2', selected_teams = selected_teams,
+                                              season = temporada_seleccionada, df_temporada = df_temporada, data_team_1 = data_team_1, data_team_2 = data_team_2)

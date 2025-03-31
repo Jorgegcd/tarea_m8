@@ -8,6 +8,8 @@ import os
 import uuid
 import streamlit.components.v1 as components
 
+# Utilizamos manejo de cache
+@st.cache_data
 # Generamos la función para crear tablas en base al dataframe
 def crear_tablas(df):
     # Indicamos las columnas para la tabla de ataque
@@ -37,6 +39,8 @@ def crear_tablas(df):
     
     return tabla1, tabla2
 
+# Utilizamos manejo de cache
+@st.cache_data
 # Generamos la gráfica estilo pirámide para dos equipos
 def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
     
@@ -138,6 +142,8 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
     # Retornamos la figura
     return fig
 
+# Utilizamos manejo de cache
+@st.cache_data
 # Generamos la gráfica de la pirámide de un equipo 
 def grafica_piramide_equipo(df, equipo, metrics):
     left_vals = []
@@ -216,6 +222,8 @@ def grafica_piramide_equipo(df, equipo, metrics):
     # Retornamos la figura
     return fig
 
+# Utilizamos manejo de cache
+@st.cache_data
 # Creamos un donut chart con la distribución de posesiones.
 def grafica_donut_posesiones(df, equipo, categorias, colores = None):
     
@@ -278,6 +286,8 @@ def grafica_donut_posesiones(df, equipo, categorias, colores = None):
     # Mostramos las figuras
     return fig
 
+# Utilizamos manejo de cache
+@st.cache_data
 # Generamos una función para el radar comparativo
 def grafica_radar_comparativo(df_selected, df, teams, metrics):
     
@@ -379,6 +389,8 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics):
     # Mostramos la figura
     return fig
 
+# Utilizamos manejo de cache
+@st.cache_data
 # Generamos función para scatter de eficiencia en el que se muestran los escudos de los equipos
 def scatter_eficiencia (df, selected_teams):
    

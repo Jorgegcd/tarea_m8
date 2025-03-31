@@ -5,6 +5,8 @@ import base64
 import plotly.graph_objects as go
 import numpy as np
 
+# Utilizamos manejo de cache
+@st.cache_data
 # Generamos la función para la caja de métricas con color gris de fondo, letras de título en negro y negrita y valores en azul
 def caja_metricas(titulo, valor, color_fondo="#f0f2f6"):
     st.markdown(f"""
@@ -18,6 +20,8 @@ def caja_metricas(titulo, valor, color_fondo="#f0f2f6"):
         </div>
     """, unsafe_allow_html=True)
 
+# Utilizamos manejo de cache
+@st.cache_data
 # Generamos la función del cálculo de métricas
 def calcular_metricas(df, team_name, season=None):
     if season:
@@ -77,7 +81,8 @@ def calcular_metricas(df, team_name, season=None):
         '% Asistencias': round(ast_pct, 1),
         '% Pérdidas': round(to_pct, 1)
     }
-
+# Utilizamos manejo de cache
+@st.cache_data
 # Generamos la gráfica temporal de resultados en la temporada
 def grafica_evolucion_resultados(df_team_jornadas, team_name):
     # Calculamos la diferencia de puntos
@@ -154,6 +159,8 @@ def grafica_evolucion_resultados(df_team_jornadas, team_name):
     
     return fig
 
+# Utilizamos manejo de cache
+@st.cache_data
 # Generamos la función para calcular percentiles
 def calcular_percentiles(df, team_id, metrics):
     percentiles = {}
@@ -164,6 +171,8 @@ def calcular_percentiles(df, team_id, metrics):
         percentiles[metric] = percentil
     return percentiles
 
+# Utilizamos manejo de cache
+@st.cache_data
 # Generamos la función de radar comparativo
 def radar_comparativo(team1, data1, team2= None, data2 = None, titulo=None):
     

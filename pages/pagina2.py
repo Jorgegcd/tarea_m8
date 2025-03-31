@@ -286,7 +286,7 @@ if 'usuario' in st.session_state:
                         ].sort_values("week")
                         
                         # Mostramos la gráfica de evolución temporal de resultados
-                        fig = grafica_evolucion_resultados(df_team_jornadas_total, team, df_temporada)
+                        fig = grafica_evolucion_resultados(df_team_jornadas_total, team)
                         st.plotly_chart(fig, use_container_width=True)
 
                 # Si tenemos 1 o 2 equipos, generamos 2 columnas  

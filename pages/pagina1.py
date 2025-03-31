@@ -226,6 +226,7 @@ if 'usuario' in st.session_state:
                     # Llamamos a la función de la gráfica de pirámide de 2 equipos pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Comparación promedios ataque</h3>", unsafe_allow_html=True)
                     fig_piramide = grafica_metricas_comparacion(df_sql_team, equipo_left, equipo_right, metrics)
+                    st.plotly_chart(fig_piramide, use_container_width=True, key = 'piramide_ataque')
                 
                 with col2:
                     # Definimos las métricas que deseas comparar, con los nombres indicados en la consulta SQL
@@ -235,6 +236,7 @@ if 'usuario' in st.session_state:
                     # Llamamos a la función de pirámide de 2 equipos pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Comparación promedios defensa</h3>", unsafe_allow_html=True)
                     fig_piramide = grafica_metricas_comparacion(df_sql_opp, equipo_left, equipo_right, metrics)
+                    st.plotly_chart(fig_piramide, use_container_width=True, key = 'piramide_defensa')
             
             # Valoramos si tenemos un único equipo
             elif len(selected_teams) == 1:
@@ -252,6 +254,7 @@ if 'usuario' in st.session_state:
                     # Llamamos a la función de pirámide de 1 único equipo pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Promedios ataque</h3>", unsafe_allow_html=True)
                     fig_piramide = grafica_piramide_equipo(df_sql_team, equipo, metrics)
+                    st.plotly_chart(fig_piramide, use_container_width=True, key = 'piramide_ataque')
                 
                 with col2:
                     
@@ -262,6 +265,7 @@ if 'usuario' in st.session_state:
                     # Llamamos a la función de pirámide de 1 único equipo pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Promedios defensa</h3>", unsafe_allow_html=True)
                     fig_piramide = grafica_piramide_equipo(df_sql_opp, equipo, metrics)
+                    st.plotly_chart(fig_piramide, use_container_width=True, key = 'piramide_defensa')
 
             # Mostramos la tabla filtrada con los datos de los equipos seleccionados
             if len(selected_teams) > 0:
@@ -294,6 +298,7 @@ if 'usuario' in st.session_state:
             if len(selected_teams) > 0:
                 st.markdown("<h3 style='text-align: center;'>Eficiencia ofensiva vs eficiencia defensiva</h3>", unsafe_allow_html=True)
                 scatter_fig = scatter_eficiencia(df_temporada, selected_teams)
+                st.plotly_chart(scatter_fig, use_container_width=True, key = 'ef_defensa_vs_ef_ataque')
                 
                 # Posteriormente dividimos en 3 columnas para mostrar gráficos diversos
                 col1, col2, col3 = st.columns(3, vertical_alignment="top")

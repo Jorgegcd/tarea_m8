@@ -8,22 +8,24 @@ import os
 import uuid
 import streamlit.components.v1 as components
 
-# Supongamos que "df" es tu DataFrame original
+# Generamos la función para crear tablas en base al dataframe
 def crear_tablas(df):
-    # Columnas para la tabla de ataque
+    # Indicamos las columnas para la tabla de ataque
     columnas_tabla1 = [
         'team_name', 'matches', 'pace', 'ortg', 'efg%', 'ts%', 'ppt2', 'vol2p', 'ppt3', 'vol3p', 'pptl', 'ftr', 'or%', 
         'ast%', 'st%', 'to%', 'blk%', 'four_factors'
     ]
-    # Columnas para la tabla de defensa
+    # Indicamos las columnas para la tabla de defensa
     columnas_tabla2 = [
         'team_name', 'matches', 'pace', 'drtg', 'dr%', 'tr%', 'efg%_opp', 'ts%_opp', 'ppt2_opp', 'vol2p_opp', 'ppt3_opp', 
         'vol3p_opp', 'pptl_opp', 'ftr_opp', 'ast%_opp', 'st%_opp', 'to%_opp', 'blk%_opp', 'four_factors_opp'
     ]
     
+    # Generamos ambas tablas
     tabla1 = df[columnas_tabla1].copy()
     tabla2 = df[columnas_tabla2].copy()
 
+    # Renombramos las columnas para las tablas
     tabla1 = tabla1.rename(columns = {'team_name':"Equipo", 'matches':"Partidos", 'pace':"Pace", 'ortg':"Eficiencia Ofensiva", 'efg%':"eFG%", 'ts%':"TS%", 'ppt2':"PPT2",
                              'vol2p':"Vol. T2%", 'ppt3':"PPT3", 'vol3p':"Vol. T3%", 'pptl':"PPTL", 'ftr':"FT Rate", 'or%':"Reb. Of.%", 'ast%':"Ast%", 'st%':"Robos%",
                              'to%':"Pérdidas%", 'blk%':"Tapones%", 'four_factors':"Four Factors"})
@@ -35,12 +37,9 @@ def crear_tablas(df):
     
     return tabla1, tabla2
 
-def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display=True):
-    """
-    Genera una gráfica estilo pirámide de población para comparar equipos.
-    Los valores del equipo_left se muestran como negativos y los del equipo_right como positivos.
-    Se añaden anotaciones en x=0 con el nombre de cada métrica y sus valores.
-    """
+# Generamos la gráfica estilo pirámide para dos equipos
+def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics):
+    
     left_vals = []
     right_vals = []
     # Recorremos cada métrica y extraemos los valores para cada equipo
@@ -54,9 +53,9 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display
         left_vals.append(left_val)  # Multiplicamos por -1 para que aparezca a la izquierda
         right_vals.append(right_val)
 
-    # Determinamos un gap en el centro (puede ser un porcentaje del máximo valor)
-    max_val = max(max(left_vals), max(right_vals))
-    gap = 0.26 * max_val  # ajustá este factor según la escala de tus datos
+    # Determinamos un hueco en el centro
+    max_val = max(max(left_vals), max(right_vals)) # Obtenemos el máximo valor para ajusar en torno a él
+    gap = 0.26 * max_val  
     
     # Creamos la figura
     fig = go.Figure()
@@ -69,7 +68,7 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display
         name=equipo_left,
         orientation='h',
         marker_color='steelblue',
-        customdata=left_vals,  # Pasamos los valores originales (positivos)
+        customdata=left_vals,
         hovertemplate="%{y}: %{customdata:.2f}<extra></extra>"
     ))
     
@@ -84,7 +83,7 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display
         hovertemplate="%{y}: %{x:.2f}<extra></extra>"
     ))
     
-    # Configuramos un rango simétrico para el eje x considerando el gap
+    # Configuramos un rango simétrico para el eje x considerando el hueco
     left_max = gap + max(left_vals)
     right_max = gap + max(right_vals)
     max_range = max(left_max, right_max)
@@ -94,9 +93,10 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display
     fig.update_yaxes(showticklabels=False)
     fig.update_xaxes(showticklabels=False)
     
-    # Añadimos una anotación centrada en x=0 para cada métrica (en el eje y)
+    # Añadimos diversas anotaciones
     annotations = []
     for i, metric in enumerate(metrics):
+        # Añadimos los nombres de las métricas para x=0 (el hueco)
         annotations.append(dict(
             x=0,
             y=metric,
@@ -107,7 +107,7 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display
             yanchor="middle"
         ))
     
-        # Valor del equipo de la izquierda (mostrar valor positivo)
+        # Añadimos los valores del equipo en las columnas de la izquierda
         annotations.append(dict(
             x=-gap,
             y=metric,
@@ -118,7 +118,7 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display
             yanchor="middle"
         ))
 
-        # Valor del equipo de la derecha (mostrar valor negativo)
+        # Añadimos los valores del equipo en las columnas de la derecha
         annotations.append(dict(
             x=gap,
             y=metric,
@@ -134,15 +134,12 @@ def grafica_metricas_comparacion(df, equipo_left, equipo_right, metrics, display
                       showlegend=True,
                       legend=dict(orientation='h', yanchor='top', y=1.2, xanchor='center', x=0.5)
                       )
-    
-    # Si display es True, muestra la gráfica en Streamlit
-    if display is True:
-        st.plotly_chart(fig, use_container_width=True, key = f'piramide_{equipo_left}_{equipo_right}_{metrics}')
-
-    # Retorna la figura (para poder exportarla luego en el PDF)
+       
+    # Retornamos la figura
     return fig
 
-def grafica_piramide_equipo(df, equipo, metrics, display = True):
+# Generamos la gráfica de la pirámide de un equipo 
+def grafica_piramide_equipo(df, equipo, metrics):
     left_vals = []
     
     # Recorremos cada métrica y extraemos los valores para cada equipo
@@ -154,14 +151,14 @@ def grafica_piramide_equipo(df, equipo, metrics, display = True):
             return
         left_vals.append(left_val) 
 
-    # Determinamos un gap en el centro (puede ser un porcentaje del máximo valor)
-    max_val = max(left_vals)
-    gap = 0.26 * max_val  # ajustá este factor según la escala de tus datos
+    # Determinamos un hueco en el centro
+    max_val = max(left_vals) # Obtenemos el máximo valor para ajusar en torno a él
+    gap = 0.26 * max_val
     
     # Creamos la figura
     fig = go.Figure()
     
-    # Añadimos la barra para el equipo izquierdo
+    # Añadimos la barra para el equipo
     fig.add_trace(go.Bar(
         y=metrics,
         x=[-val for val in left_vals],
@@ -169,17 +166,17 @@ def grafica_piramide_equipo(df, equipo, metrics, display = True):
         name= equipo,
         orientation='h',
         marker_color='steelblue',
-        customdata=left_vals,  # Pasamos los valores originales (positivos)
+        customdata=left_vals,  
         hovertemplate="%{y}: %{customdata:.2f}<extra></extra>"
     ))
     
-    # Actualizamos el layout para que ambas trazas se superpongan (sin offset vertical)
+    # Actualizamos el layout para que ambas trazas se superpongan
     fig.update_layout(
         barmode='overlay',
         showlegend=True
     )
     
-    # Configuramos un rango simétrico para el eje x considerando el gap
+    # Configuramos un rango simétrico para el eje x considerando el hueco
     left_max = gap + max(left_vals)
     right_max = gap - max(left_vals)
     max_range = max(left_max, right_max)
@@ -189,9 +186,10 @@ def grafica_piramide_equipo(df, equipo, metrics, display = True):
     fig.update_yaxes(showticklabels=False)
     fig.update_xaxes(showticklabels=False)
     
-    # Añadimos una anotación centrada en x=0 para cada métrica (en el eje y)
+    # Añadimos diversas anotaciones
     annotations = []
     for i, metric in enumerate(metrics):
+        # Añadimos los nombres de las métricas para x=0 (el hueco)
         annotations.append(dict(
             x=0,
             y=metric,
@@ -202,7 +200,7 @@ def grafica_piramide_equipo(df, equipo, metrics, display = True):
             yanchor="middle"
         ))
     
-        # Valor del equipo de la izquierda (mostrar valor positivo)
+        # Añadimos los valores del equipo en las columnas de la izquierda
         annotations.append(dict(
             x=-gap,
             y=metric,
@@ -214,32 +212,28 @@ def grafica_piramide_equipo(df, equipo, metrics, display = True):
         ))
 
     fig.update_layout(annotations=annotations)
-    
-    # Si display es True, muestra la gráfica en Streamlit
-    if display is True:
-        st.plotly_chart(fig, use_container_width=True, key = f'piramide_{equipo}_{metrics}')
 
-    # Retorna la figura (para poder exportarla luego en el PDF)
+    # Retornamos la figura
     return fig
 
 # Creamos un donut chart con la distribución de posesiones.
 def grafica_donut_posesiones(df, equipo, categorias, colores = None):
     
-    # Filtrar el DataFrame para el equipo deseado
+    # Filtramos el DataFrame para mostrar los datos del equipo deseado
     df_equipo = df[df["Equipo"] == equipo]
 
-    # Verificamos que exista la columna "team_id"
+    # Verificamos que exista la columna team_id
     if "team_id" not in df_equipo.columns:
         st.error("La columna 'team_id' no se encuentra en los datos. Asegúrese de incluirla en la consulta.")
         return
 
-    # Tomamos la primera fila (suponiendo que es el dato que queremos graficar)
+    # Cogemos la primera fila del dataframe filtrado
     row = df_equipo.iloc[0]
 
     # Extraemos los valores correspondientes
     data = {cat: row[cat] for cat in categorias}
 
-    # Agregar la métrica derivada de tiro libre (Pos. Tiro Libre = 0.44 * TL Intentados)
+    # Agregamos la métrica de posesiones de tiros libres (Pos. Tiro Libre = 0.44 * TL Intentados) tanto para el equipo como para el rival
     if "TLI" in row:
         tl_val = data.pop("TLI")
         data["TLI"] = 0.44 * tl_val
@@ -260,28 +254,28 @@ def grafica_donut_posesiones(df, equipo, categorias, colores = None):
     # Convertimos el diccionario a un DataFrame
     donut_df = pd.DataFrame(list(data.items()), columns=["Categoría", "Valor"])
     
-    # Crear el gráfico de donut con Plotly Express
+    # Creamos el gráfico de donut con Plotly Express
     fig = px.pie(
         donut_df,
         names="Categoría",
         values="Valor",
-        hole=0.5,  # Esto crea el efecto de donut
+        hole=0.5,  # Esto crea el hueco de donut
         color_discrete_sequence=colores
     )
     
-    # Configurar el texto del hover y dentro del gráfico para mostrar porcentajes y etiquetas
+    # Configuramos el texto del hover y dentro del gráfico para mostrar porcentajes y etiquetas
     fig.update_traces(textposition='inside',
                       textinfo='percent+label',
                       hovertemplate="%{label}: %{value:.2f}<extra></extra>")
 
-    # Eliminar la leyenda y fijamos márgenes
+    # Eliminamos la leyenda y fijamos márgenes
     fig.update_layout(showlegend=False,
                       margin=dict(l=50, r=50, t=35, b=35),)
     
     # Fijamos el dominio para que el donut siempre tenga centro (0.5,0.5) y dimensiones fijas.
     fig.update_traces(domain={'x': [0.05, 0.95], 'y': [0.05, 0.95]})
 
-    # Retorna la figura (para poder exportarla luego en el PDF)
+    # Mostramos las figuras
     return fig
 
 # Generamos una función para el radar comparativo
@@ -319,6 +313,7 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics):
             textpos = "middle left"
             textcolor = None
         
+        # Generamos el radar de los equipos
         fig.add_trace(go.Scatterpolar(
             r=values,
             theta=theta,
@@ -332,11 +327,12 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics):
             hovertemplate = "Equipo: %{fullData.name}<br>Métrica: %{theta}<br>Valor: %{r:.2f}<extra></extra>"
         ))
 
-    # Calcular la mediana global para cada métrica
+    # Calculamos la mediana global para cada métrica
     median_values = [df[m].median() for m in metrics]
     median_values += [median_values[0]]
     theta = metrics + [metrics[0]]
 
+    # Generamos las líneas de la mediana
     fig.add_trace(go.Scatterpolar(
         r=median_values,
         theta=theta,
@@ -352,13 +348,13 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics):
         max([max(df[m]) for m in metrics])
     )
     
-    # Actualizar el layout del gráfico
+    # Actualizamos el layout del gráfico
     fig.update_layout(
         polar=dict(
             domain=dict(x=[0,1], y=[0.05, 0.951]),
             radialaxis=dict(
                 visible=True,
-                range=[0, max_range], # Fijamos rango
+                range=[0, max_range], # Fijamos rango del radar
                 showticklabels = False,
                 showline = False,
                 ticks="",
@@ -380,15 +376,16 @@ def grafica_radar_comparativo(df_selected, df, teams, metrics):
     other_traces = [trace for trace in fig.data if trace.name != "Mediana"]
     fig.data = other_traces + median_trace
     
-    # Retorna la figura (para poder exportarla luego en el PDF)
+    # Mostramos la figura
     return fig
-# Generamos función para scatter de eficiencia
-def scatter_eficiencia (df, selected_teams, display = True):
+
+# Generamos función para scatter de eficiencia en el que se muestran los escudos de los equipos
+def scatter_eficiencia (df, selected_teams):
    
-   # Crear una copia para no modificar el DataFrame original
+   # Creamos una copia para no modificar el DataFrame original
     df_plot = df.copy()
     
-    # Agregar columna "opacity": 1 si el equipo está en selected_teams, sino 0.3
+    # Agregamos la columna "opacity": 1 si el equipo es seleccionado y, si no 0.3
     df_plot['opacity'] = df_plot['team_name'].apply(lambda x: 1 if x in selected_teams else 0.3)
    
    # Creamos el scatterplot usando Plotly Express
@@ -401,11 +398,11 @@ def scatter_eficiencia (df, selected_teams, display = True):
         hover_data=["team_name", "drtg", "ortg"]
     )
     
-    # Actualizar los marcadores con opacidades individuales
+    # Actualizamos los marcadores con opacidades individuales
     fig.update_traces(marker=dict(opacity=0))
     
     # Ajustamos los ejes:
-    # y el eje y va de 95 hasta un poco más que el máximo de drtg. Además, invertimos el eje y.
+    # El eje y va de 95 hasta un poco más que el máximo de drtg. Además, invertimos el eje y.
     x_min = 95
     x_max = df["ortg"].max() * 1.02
     y_min = 95
@@ -427,7 +424,7 @@ def scatter_eficiencia (df, selected_teams, display = True):
         )
     ))
     
-    # Calculamos un tamaño para los logos (por ejemplo, 5% del rango de cada eje)
+    # Calculamos un tamaño para los logos (15% del rango de cada eje)
     x_range = df["ortg"].max() - df["ortg"].min()
     y_range = df["drtg"].max() - df["drtg"].min()
     sizex = x_range * 0.15
@@ -439,14 +436,14 @@ def scatter_eficiencia (df, selected_teams, display = True):
     for _, row in df_plot.iterrows():
         team_id = row["team_id"]
         
-        # Construimos la ruta absoluta: images está en la raíz (tarea_m8/images)
+        # Construimos la ruta absoluta (tarea_m8/images)
         logo_path = os.path.join(current_dir, "images", "teams", f"{team_id}.png")
 
         if os.path.exists(logo_path):
             with open(logo_path, "rb") as image_file:
                 encoded_logo = base64.b64encode(image_file.read()).decode()
             
-            # Usar la opacidad del equipo
+            # Usamos la opacidad del equipo
             logo_opacity = row["opacity"]
 
             fig.add_layout_image(
@@ -467,11 +464,11 @@ def scatter_eficiencia (df, selected_teams, display = True):
         else:
             st.error(f"No se encontró la imagen: {logo_path}")
         
-    # Calcular las medianas para agregar las líneas de referencia
+    # Calculamos las medianas para agregar las líneas de referencia
     median_x = df["ortg"].median()
     median_y = df["drtg"].median()
 
-    # Añadir línea vertical en la mediana de ortg
+    # Añadimos la línea vertical en la mediana de Eficiencia Ofensiva
     fig.add_shape(
         type="line",
         x0=median_x, x1=median_x,
@@ -479,7 +476,7 @@ def scatter_eficiencia (df, selected_teams, display = True):
         xref="x", yref="y",
         line=dict(dash="dash", color = "grey")
     )
-    # Añadir línea horizontal en la mediana de drtg
+    # Añadimos la línea horizontal en la mediana de Eficiencia Defensiva
     fig.add_shape(
         type="line",
         x0=x_min, x1=x_max,
@@ -488,7 +485,7 @@ def scatter_eficiencia (df, selected_teams, display = True):
         line=dict(dash="dash", color = "grey")
     )
    
-    # Agregamos las anotaciones en cada esquina con un tono de gris clarito.
+    # Agregamos las anotaciones en cada esquina con un tono de gris clarito para indicar las diferentes zonas
     fig.add_annotation(
         x=x_max - 0.5 , y=y_max - 0.25,
         text="Buen ataque/mala defensa",
@@ -518,14 +515,10 @@ def scatter_eficiencia (df, selected_teams, display = True):
         xanchor="left", yanchor="bottom"
     )
 
-    # Quitar la leyenda
+    # Quitamos la leyenda
     fig.update_layout(showlegend=False, width = 415, height = 830)
-    
-    # Si display es True, muestra la gráfica en Streamlit
-    if display is True:
-        st.plotly_chart(fig, use_container_width=True)
 
-    # Retorna la figura (para poder exportarla luego en el PDF)
+    # Mostramos la figura
     return fig
 
 def print_window():

@@ -5,6 +5,7 @@ import base64
 import plotly.graph_objects as go
 import numpy as np
 
+# Generamos la función para la caja de métricas con color gris de fondo, letras de título en negro y negrita y valores en azul
 def caja_metricas(titulo, valor, color_fondo="#f0f2f6"):
     st.markdown(f"""
         <div style='background-color: {color_fondo}; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0px 0px 6px rgba(0,0,0,0.1);height: 160px; 
@@ -17,6 +18,7 @@ def caja_metricas(titulo, valor, color_fondo="#f0f2f6"):
         </div>
     """, unsafe_allow_html=True)
 
+# Generamos la función del cálculo de métricas
 def calcular_metricas(df, team_name, season=None):
     if season:
         df = df[(df['team_name'] == team_name) & (df['season'] == season)]
@@ -26,7 +28,7 @@ def calcular_metricas(df, team_name, season=None):
     if df.empty:
         return {}
 
-    # Datos agregados
+    # Agregamos datos
     pts = df['pts'].sum()
     pts_opp = df['pts_opp'].sum()
     fga = df['fga'].sum()
@@ -45,8 +47,10 @@ def calcular_metricas(df, team_name, season=None):
     or_opp = df['or_opp'].sum()
     dr_opp = df['dr_opp'].sum()
 
+    # Generamos la cantidad de posesiones
     poss = 0.96* (fga + 0.44 * fta - or_ + to)
 
+    # Calculamos métricas que nos hacen falta
     ortg = (pts / poss) * 100 if poss > 0 else 0
     drtg = (pts_opp / poss) * 100 if poss > 0 else 0
     efg = (fgm + (0.5 * fg3m)) / fga
@@ -74,19 +78,21 @@ def calcular_metricas(df, team_name, season=None):
         '% Pérdidas': round(to_pct, 1)
     }
 
-def grafica_evolucion_resultados(df_team_jornadas, team_name, df_temporada):
+# Generamos la gráfica temporal de resultados en la temporada
+def grafica_evolucion_resultados(df_team_jornadas, team_name):
     # Calculamos la diferencia de puntos
     df_team_jornadas = df_team_jornadas.copy()
     df_team_jornadas["diff"] = df_team_jornadas["pts"] - df_team_jornadas["pts_opp"]
     df_team_jornadas["resultado"] = df_team_jornadas["w/l"].str.upper().map({"W": "Victoria", "L": "Derrota"})
 
-    # Crear texto personalizado para hover
+    # Creamos texto personalizado para hover
     df_team_jornadas["texto"] = df_team_jornadas.apply(
         lambda row: f"{row['resultado']} ({row['pts']} - {row['pts_opp']})", axis=1)
     
-    # Creamos una columna para texto más alta (desplazamos visualmente el texto hacia arriba)
-    df_team_jornadas["diff_text"] = df_team_jornadas["diff"] + 4  # Puedes ajustar el 
+    # Ubicamos el texto un poco más alto de lo que vendría
+    df_team_jornadas["diff_text"] = df_team_jornadas["diff"] + 4 
 
+    # Generamos la gráfica
     fig = px.scatter(
         df_team_jornadas,
         x="week",
@@ -117,7 +123,7 @@ def grafica_evolucion_resultados(df_team_jornadas, team_name, df_temporada):
     for _, row in df_team_jornadas.iterrows():
         team_opp = row["team_id_opp"]
         
-        # Construimos la ruta absoluta: images está en la raíz (tarea_m8/images)
+        # Construimos la ruta absoluta (tarea_m8/images)
         logo_path = os.path.join(current_dir, "images", "teams", f"{team_opp}.png")
 
         if os.path.exists(logo_path):
@@ -145,8 +151,10 @@ def grafica_evolucion_resultados(df_team_jornadas, team_name, df_temporada):
         textposition="top center")
     fig.update_layout(showlegend=False, height=400)
     fig.update_yaxes(zeroline=True, zerolinewidth=2, zerolinecolor='gray')
+    
     return fig
 
+# Generamos la función para calcular percentiles
 def calcular_percentiles(df, team_id, metrics):
     percentiles = {}
     for metric in metrics:
@@ -156,6 +164,7 @@ def calcular_percentiles(df, team_id, metrics):
         percentiles[metric] = percentil
     return percentiles
 
+# Generamos la función de radar comparativo
 def radar_comparativo(team1, data1, team2= None, data2 = None, titulo=None):
     
     categorias = list(data1.keys())

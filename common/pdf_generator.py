@@ -48,7 +48,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
             self.set_font(self.myfont, "", 16) # Tipo de fuente
             
             self.set_y(10)  # Posición vertical del texto
-            self.set_x((self.w - self.get_string_width("Tarea Módulo 8:Página 1")) / 2)  # Centramos horizontalmente el título en el encabezado
+            self.set_x((self.w - self.get_string_width("Tarea Módulo 8:Pestaña 1")) / 2)  # Centramos horizontalmente el título en el encabezado
             self.cell(55,3, "Tarea Módulo 8:Página 1", border=0, align="C")
 
             # Designamos la fuente que queremos y tamaño 8
@@ -164,13 +164,20 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf.set_font(pdf.myfont, "B", size=14) # Texto en tamaño 14 en negrita
     title = page_title # Mostramos el título de la página
     pdf.cell(0, 10, title, 0, 1, 'C')  # Mostramos el texto en el centro
-    pdf.ln(5)
+    if len(selected_teams) > 1:
+        pdf.ln(5)
+    else:
+        pdf.ln(1)
+
 
     # Mostramos texto (título) de lo que trata el pdf
     pdf.set_font(pdf.myfont, "", 12)
     equipos_text = ", ".join(selected_teams)
     pdf.cell(0, 10, f"Comparación entre {equipos_text}", 0, 1, "C")
-    pdf.ln(5)
+    if len(selected_teams) > 1:
+        pdf.ln(5)
+    else:
+        pdf.ln(1)
 
     # Obtenemos ancho de la página considerando márgenes
     page_width = pdf.w - 2 * pdf.l_margin
@@ -187,6 +194,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
             pdf.image(logo_path, x=x_position, y=current_y, w=logo_width)
         else:
             pdf.cell(0, 10, f"No se encontró logo para {selected_teams[0]}", 0, 1, "C")
+        
         pdf.ln(30)
 
     elif len(selected_teams) == 2:
@@ -246,19 +254,20 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf.cell(page_width/2, 2, 'Comparación promedios ataque', border = str(0), align="C")
     pdf.cell(page_width/2, 2, 'Comparación promedios defensa', border = str(0), align="C")
     pdf.ln(8)
-    if os.path.exists("temp/piramide_ataque_1.png"):
+    if len(selected_teams) > 1:
         pdf.image("temp/piramide_ataque_1.png", x=10, y=pdf.get_y(), w=90)
     else:
         pdf.image("temp/piramide_ataque_3.png", x=10, y=pdf.get_y(), w=90)
 
-    if os.path.exists("temp/piramide_ataque_2.png"):
+    if len(selected_teams) > 1:
         pdf.image("temp/piramide_ataque_2.png", x=110, y=pdf.get_y(), w=90)
     else:
         pdf.image("temp/piramide_ataque_4.png", x=110, y=pdf.get_y(), w=90)
-
-    pdf.ln(90)
+    if len(selected_teams) > 1:
+        pdf.ln(90)
+    else:
+        pdf.ln(65)
     
-    pdf.ln(10)
     pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
     pdf.cell(page_width, 2, 'Estadísticas avanzadas ataque', border = str(0), align="C")
     pdf.ln(8)
@@ -294,7 +303,10 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     if os.path.exists("temp/scatter_eficiencia.png"):
         pdf.image("temp/scatter_eficiencia.png", x=30, y=pdf.get_y(), w=160)
 
-    pdf.ln(160)
+    if len(selected_teams) > 1:
+        pdf.ln(170)
+    else:
+        pdf.ln(120)
     
     # Ubicación de los gráficos de donut
     pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
@@ -306,29 +318,32 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     
     pdf.ln(8)
 
-    if os.path.exists("temp/donut_equipo_1.png"):
+    if len(selected_teams) > 1:
         pdf.image("temp/donut_equipo_1.png", x=10, y=pdf.get_y(), w=90)
     else:
         pdf.image("temp/donut_equipo_2.png", x=10, y=pdf.get_y(), w=90)
 
-    if os.path.exists("temp/donut_equipo_3.png"):
+    if len(selected_teams) > 1:
         pdf.image("temp/donut_equipo_3.png", x=110, y=pdf.get_y(), w=90)
     else:
         pdf.image("temp/donut_equipo_4.png", x=110, y=pdf.get_y(), w=90)
 
-    pdf.ln(75)
+    if len(selected_teams) > 1:
+        pdf.ln(75)
+    else:
+        pdf.ln(95)
  
     pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
     pdf.cell(page_width/2, 2, 'Comparación est. avanzadas ataque', border = str(0), align="C")
     pdf.cell(page_width/2, 2, 'Comparación est. avanzadas defensa', border = str(0), align="C")
     pdf.ln(10)
 
-    if os.path.exists("temp/radar_comparativo_1.png"):
+    if len(selected_teams) > 1:
         pdf.image("temp/radar_comparativo_1.png", x=10, y=pdf.get_y(), w=90)
     else:
         pdf.image("temp/radar_comparativo_2.png", x=10, y=pdf.get_y(), w=90)
 
-    if os.path.exists("temp/radar_comparativo_3.png"):
+    if len(selected_teams) > 1:
         pdf.image("temp/radar_comparativo_3.png", x=110, y=pdf.get_y(), w=90)
     else:
         pdf.image("temp/radar_comparativo_4.png", x=110, y=pdf.get_y(), w=90)

@@ -257,7 +257,7 @@ if 'usuario' in st.session_state:
                     st.markdown("<h3 style='text-align: center;'>Promedios ataque</h3>", unsafe_allow_html=True)
                     fig_piramide_3 = grafica_piramide_equipo(df_sql_team, equipo, metrics)
                     ruta_piramide_3 = guardar_grafica_plotly(fig_piramide_3, "piramide_ataque_3.png")
-                    st.plotly_chart(fig_piramide_3, use_container_width=True, key = 'piramide_ataque')
+                    st.plotly_chart(fig_piramide_3, use_container_width=True, key = 'piramide_ataque_2')
                 
                 with col2:
                     
@@ -269,7 +269,7 @@ if 'usuario' in st.session_state:
                     st.markdown("<h3 style='text-align: center;'>Promedios defensa</h3>", unsafe_allow_html=True)
                     fig_piramide_4 = grafica_piramide_equipo(df_sql_opp, equipo, metrics)
                     ruta_piramide_4 = guardar_grafica_plotly(fig_piramide_4, "piramide_ataque_4.png")
-                    st.plotly_chart(fig_piramide_4, use_container_width=True, key = 'piramide_defensa')
+                    st.plotly_chart(fig_piramide_4, use_container_width=True, key = 'piramide_defensa_2')
 
             # Mostramos la tabla filtrada con los datos de los equipos seleccionados
             if len(selected_teams) > 0:
@@ -455,7 +455,7 @@ if 'usuario' in st.session_state:
                         # Generamos la gráfica radar comparativa
                         fig_radar_3 = grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa)
                         ruta_radar_3 = guardar_grafica_plotly(fig_radar_3, "radar_comparativo_3.png")
-                        st.plotly_chart(fig_radar_3, use_container_width=True, key = 'radar_2')
+                        st.plotly_chart(fig_radar_3, use_container_width=True, key = 'radar_3')
 
                     elif len(selected_teams) == 1:
                         # Si hay 1 equipo seleccionado, incluimos lo siguiente en la columna 2
@@ -475,7 +475,7 @@ if 'usuario' in st.session_state:
                                     'Pérdidas% Rivales', 'Robos%', 'Four Factors Rivales']
                         fig_radar_4 = grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa)
                         ruta_radar_4 = guardar_grafica_plotly(fig_radar_4, "radar_comparativo_4.png")
-                        st.plotly_chart(fig_radar_4, use_container_width=True, key = 'radar_2')
+                        st.plotly_chart(fig_radar_4, use_container_width=True, key = 'radar_4')
                 
                 with col3:
                     if len(selected_teams) == 2:

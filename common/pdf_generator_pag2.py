@@ -278,6 +278,6 @@ def generate_pdf_pag2(page_title, selected_teams, season, df_temporada, data_tea
     # METER EN PARALELO LOS RADARES COMPARATIVOS
 
     # Guardamos
-    output_path = "temp/reporte.pdf"
+    output_path = "common/pestana2.pdf"
     pdf.output(output_path)
     return output_path

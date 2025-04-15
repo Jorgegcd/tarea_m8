@@ -441,7 +441,6 @@ if 'usuario' in st.session_state:
             
             # Si es mayor que 0 los equipos seleccionados, generamos pdf y botón de página
             if len(selected_teams) > 0:
-                st.button('Imprimir Página')
 
                 if st.button("Generar PDF"):
 
@@ -506,3 +505,4 @@ if 'usuario' in st.session_state:
                     pdf = generate_pdf_pag2 (page_title = 'Comparador por jornadas y totales de equipos ABA League 2', selected_teams = selected_teams,
                                               season = temporada_seleccionada, df_temporada = df_temporada, data_team_1 = data_team_1, data_team_2 = data_team_2,
                                               tabla_cajas_team_1=tabla_cajas_team_1, tabla_cajas_team_2=tabla_cajas_team_2)
+                    

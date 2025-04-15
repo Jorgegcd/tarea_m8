@@ -492,8 +492,6 @@ if 'usuario' in st.session_state:
                 
             # Si es mayor que 0 los equipos seleccionados, generamos pdf y botón de página
             if len(selected_teams) > 0:
-                st.button('Imprimir Página')
-
                 if st.button("Generar PDF"):
 
                     if not os.path.exists('temp'):
@@ -504,4 +502,19 @@ if 'usuario' in st.session_state:
                     
                     pdf = generate_pdf_pag1(page_title = 'Comparador de equipos ABA League 2', selected_teams = selected_teams, df_temporada = df_temporada, df_sql_team = df_sql_team,
                                             df_sql_opp = df_sql_opp, tabla_ataque = tabla_ataque, tabla_defensa = tabla_defensa, 
-                                            output_filename= 'data/test.pdf')
+                                            output_filename= 'common/pdf_pestana1.pdf')
+                    
+                    # Ruta al archivo generado
+                    pdf_path = os.path.join("common", "pdf_pestana1.pdf")
+
+                    # Leemos el PDF en binario
+                    with open(pdf_path, "rb") as f:
+                        pdf_bytes = f.read()
+
+                    # Botón para descargar el PDF
+                    st.download_button(
+                        label="📄 Descargar PDF",
+                        data=pdf_bytes,
+                        file_name="informe_equipo_ABA_League_2.pdf",
+                        mime="application/pdf"
+                    )

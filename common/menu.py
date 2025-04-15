@@ -9,7 +9,7 @@ def generarMenu(user, tiempo= None):
         #Mostramos el nombre del usuario
         st.write(f"Hola **{user}** ")
         # Mostramos los enlaces de páginas
-        st.page_link("home.py", label="Inicio", icon=":material/home:")
+        st.page_link("app.py", label="Inicio", icon=":material/home:")
         st.subheader("Páginas")
         st.page_link("pages/pagina1.py", label="Comparador total temporada", icon=":material/analytics:")
         st.page_link("pages/pagina2.py", label="Comparador por jornadas", icon=":material/data_table:") 

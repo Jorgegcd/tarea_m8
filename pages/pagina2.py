@@ -4,7 +4,6 @@ import pandas as pd
 import os
 from common.functions_pag2 import caja_metricas, calcular_metricas, grafica_evolucion_resultados, calcular_percentiles, radar_comparativo
 from common.pdf_generator_pag2 import generate_pdf_pag2
-from common.functions import print_window
 import common.login as login
 from sqlalchemy import create_engine
 import plotly.express as px

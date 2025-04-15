@@ -2,7 +2,7 @@ import streamlit as st
 import common.menu as menu
 import pandas as pd
 import os
-from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo, grafica_donut_posesiones, grafica_radar_comparativo, scatter_eficiencia
+from common.functions import crear_tablas, grafica_metricas_comparacion, grafica_piramide_equipo, grafica_donut_posesiones,grafica_radar_comparativo, scatter_eficiencia, guardar_grafica_plotly
 from common.pdf_generator import generate_pdf_pag1
 from sqlalchemy import create_engine
 import common.login as login
@@ -225,8 +225,9 @@ if 'usuario' in st.session_state:
                     
                     # Llamamos a la función de la gráfica de pirámide de 2 equipos pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Comparación promedios ataque</h3>", unsafe_allow_html=True)
-                    fig_piramide = grafica_metricas_comparacion(df_sql_team, equipo_left, equipo_right, metrics)
-                    st.plotly_chart(fig_piramide, use_container_width=True, key = 'piramide_ataque')
+                    fig_piramide_1 = grafica_metricas_comparacion(df_sql_team, equipo_left, equipo_right, metrics)
+                    ruta_piramide_1 = guardar_grafica_plotly(fig_piramide_1, "piramide_ataque_1.png")
+                    st.plotly_chart(fig_piramide_1, use_container_width=True, key = 'piramide_ataque')
                 
                 with col2:
                     # Definimos las métricas que deseas comparar, con los nombres indicados en la consulta SQL
@@ -235,8 +236,9 @@ if 'usuario' in st.session_state:
                     
                     # Llamamos a la función de pirámide de 2 equipos pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Comparación promedios defensa</h3>", unsafe_allow_html=True)
-                    fig_piramide = grafica_metricas_comparacion(df_sql_opp, equipo_left, equipo_right, metrics)
-                    st.plotly_chart(fig_piramide, use_container_width=True, key = 'piramide_defensa')
+                    fig_piramide_2 = grafica_metricas_comparacion(df_sql_opp, equipo_left, equipo_right, metrics)
+                    ruta_piramide_2 = guardar_grafica_plotly(fig_piramide_2, "piramide_ataque_2.png")
+                    st.plotly_chart(fig_piramide_2, use_container_width=True, key = 'piramide_defensa')
             
             # Valoramos si tenemos un único equipo
             elif len(selected_teams) == 1:
@@ -253,8 +255,9 @@ if 'usuario' in st.session_state:
                     
                     # Llamamos a la función de pirámide de 1 único equipo pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Promedios ataque</h3>", unsafe_allow_html=True)
-                    fig_piramide = grafica_piramide_equipo(df_sql_team, equipo, metrics)
-                    st.plotly_chart(fig_piramide, use_container_width=True, key = 'piramide_ataque')
+                    fig_piramide_3 = grafica_piramide_equipo(df_sql_team, equipo, metrics)
+                    ruta_piramide_3 = guardar_grafica_plotly(fig_piramide_3, "piramide_ataque_3.png")
+                    st.plotly_chart(fig_piramide_3, use_container_width=True, key = 'piramide_ataque')
                 
                 with col2:
                     
@@ -264,8 +267,9 @@ if 'usuario' in st.session_state:
                     
                     # Llamamos a la función de pirámide de 1 único equipo pasando el DataFrame original de la consulta
                     st.markdown("<h3 style='text-align: center;'>Promedios defensa</h3>", unsafe_allow_html=True)
-                    fig_piramide = grafica_piramide_equipo(df_sql_opp, equipo, metrics)
-                    st.plotly_chart(fig_piramide, use_container_width=True, key = 'piramide_defensa')
+                    fig_piramide_4 = grafica_piramide_equipo(df_sql_opp, equipo, metrics)
+                    ruta_piramide_4 = guardar_grafica_plotly(fig_piramide_4, "piramide_ataque_4.png")
+                    st.plotly_chart(fig_piramide_4, use_container_width=True, key = 'piramide_defensa')
 
             # Mostramos la tabla filtrada con los datos de los equipos seleccionados
             if len(selected_teams) > 0:
@@ -298,6 +302,7 @@ if 'usuario' in st.session_state:
             if len(selected_teams) > 0:
                 st.markdown("<h3 style='text-align: center;'>Eficiencia ofensiva vs eficiencia defensiva</h3>", unsafe_allow_html=True)
                 scatter_fig = scatter_eficiencia(df_temporada, selected_teams)
+                ruta_scatter = guardar_grafica_plotly(scatter_fig, "scatter_eficiencia.png")
                 st.plotly_chart(scatter_fig, use_container_width=True, key = 'ef_defensa_vs_ef_ataque')
                 
                 # Posteriormente dividimos en 3 columnas para mostrar gráficos diversos
@@ -315,8 +320,9 @@ if 'usuario' in st.session_state:
                         # Filtramos los colores azules para la gráfica de donut
                         colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
                         # Hacemos gráfica donut para el primer equipo de sus datos
-                        fig_donut = grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores=colores_azules)
-                        st.plotly_chart(fig_donut, use_container_width=True, key = 'donut_comparativo_ataque')
+                        fig_donut_1 = grafica_donut_posesiones(df_sql_team, equipo_left, posesiones_equipo, colores=colores_azules)
+                        ruta_donut_1 = guardar_grafica_plotly(fig_donut_1, "donut_equipo_1.png")
+                        st.plotly_chart(fig_donut_1, use_container_width=True, key = 'donut_comparativo_ataque')
 
                     # Si hay 1 equipo seleccionado, incluimos lo siguiente en la columna 1
                     elif len(selected_teams) == 1:
@@ -327,8 +333,9 @@ if 'usuario' in st.session_state:
                         # Filtramos los colores azules para la gráfica de donut
                         colores_azules = ["steelblue", "blue", "#33fff6", "#44b1de"]
                         # Hacemos gráfica donut para el equipo seleccionado de sus datos
-                        fig_donut = grafica_donut_posesiones(df_sql_team, equipo, posesiones_equipo, colores=colores_azules)
-                        st.plotly_chart(fig_donut, use_container_width=True, key = 'donut_individual_1_ataque')
+                        fig_donut_2 = grafica_donut_posesiones(df_sql_team, equipo, posesiones_equipo, colores=colores_azules)
+                        ruta_donut_2 = guardar_grafica_plotly(fig_donut_2, "donut_equipo_2.png")
+                        st.plotly_chart(fig_donut_2, use_container_width=True, key = 'donut_individual_1_ataque')
                         
                 with col2:
                     # Si hay 2 equipos seleccionados, incluimos lo siguiente en la columna 2
@@ -352,6 +359,7 @@ if 'usuario' in st.session_state:
                         teams = [equipo_left, equipo_right]
                         # Generamos la gráfica radar comparativa
                         fig_radar_1 = grafica_radar_comparativo(df_selected, df_radar_ataque, teams, metrics = est_ataque)
+                        ruta_radar_1 = guardar_grafica_plotly(fig_radar_1, "radar_comparativo_1.png")
                         st.plotly_chart(fig_radar_1, use_container_width=True, key = 'radar_1')
 
                     # Si hay 1 equipo seleccionado, incluimos lo siguiente en la columna 2
@@ -372,8 +380,9 @@ if 'usuario' in st.session_state:
                         est_ataque = ['Of. Rtg', 'eFG%', 'TS%', 'FT Rate', 'Vol. T2%', 'Vol. T3%', 'Of. Reb%', 'Ast%', 'Pérdidas%', 'Four Factors']
                         teams = [equipo_left]
                         # Generamos la gráfica radar comparativa
-                        fig_radar_1 = grafica_radar_comparativo(df_selected, df_radar_ataque, teams, metrics = est_ataque)
-                        st.plotly_chart(fig_radar_1, use_container_width=True, key = 'radar_1')
+                        fig_radar_2 = grafica_radar_comparativo(df_selected, df_radar_ataque, teams, metrics = est_ataque)
+                        ruta_radar_2 = guardar_grafica_plotly(fig_radar_2, "radar_comparativo_2.png")
+                        st.plotly_chart(fig_radar_2, use_container_width=True, key = 'radar_2')
                 
                 with col3:
                     # Si hay 2 equipos seleccionados, incluimos lo siguiente en la columna 3
@@ -387,8 +396,9 @@ if 'usuario' in st.session_state:
                         # Filtramos los colores rojos para la gráfica de donut
                         colores_rojos = ["tomato", "red", "#b11f1f", "#f88686"]
                         # Hacemos gráfica donut para el equipo seleccionado de sus datos
-                        fig_donut_2 = grafica_donut_posesiones(df_sql_team, equipo_right, posesiones_equipo, colores = colores_rojos)
-                        st.plotly_chart(fig_donut_2, use_container_width=True, key = 'donut_comparativo_2_ataque')
+                        fig_donut_3 = grafica_donut_posesiones(df_sql_team, equipo_right, posesiones_equipo, colores = colores_rojos)
+                        ruta_donut_3 = guardar_grafica_plotly(fig_donut_3, "donut_equipo_3.png")
+                        st.plotly_chart(fig_donut_3, use_container_width=True, key = 'donut_comparativo_2_ataque')
                         
 
                     elif len(selected_teams) == 1:
@@ -400,8 +410,9 @@ if 'usuario' in st.session_state:
                         # Indicamos las métricas a incluir en la gráfica radar
                         posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
                         # Hacemos gráfica donut para el equipo seleccionado de sus datos
-                        fig_donut_2 = grafica_donut_posesiones(df_sql_opp, equipo, posesiones_rival, colores = colores_rojos)
-                        st.plotly_chart(fig_donut_2, use_container_width=True, key = 'donut_individual_2_ataque')
+                        fig_donut_4 = grafica_donut_posesiones(df_sql_opp, equipo, posesiones_rival, colores = colores_rojos)
+                        ruta_donut_4 = guardar_grafica_plotly(fig_donut_4, "donut_equipo_4.png")
+                        st.plotly_chart(fig_donut_4, use_container_width=True, key = 'donut_individual_2_ataque')
                 
                 # Generamos nueva línea para la segunda fila de gráficas
                 col1, col2, col3 = st.columns(3, vertical_alignment="top")
@@ -416,8 +427,9 @@ if 'usuario' in st.session_state:
                         # Indicamos las métricas a incluir en la gráfica radar
                         posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
                         # Hacemos gráfica donut para el equipo seleccionado de sus datos
-                        fig_donut_3 = grafica_donut_posesiones(df_sql_opp, equipo_left, posesiones_rival, colores = colores_azules)
-                        st.plotly_chart(fig_donut_3, use_container_width=True, key = 'donut_comparativo_1_defensa')
+                        fig_donut_5 = grafica_donut_posesiones(df_sql_opp, equipo_left, posesiones_rival, colores = colores_azules)
+                        ruta_donut_5 = guardar_grafica_plotly(fig_donut_5, "donut_equipo_5.png")
+                        st.plotly_chart(fig_donut_5, use_container_width=True, key = 'donut_comparativo_1_defensa')
 
                 with col2:
                     # Si hay 2 equipos seleccionados, incluimos lo siguiente en la columna 2
@@ -441,8 +453,9 @@ if 'usuario' in st.session_state:
                         est_defensa = ['Def. Rtg', 'Def. Reb%', 'eFG% Rivales', 'TS% Rivales', 'FT Rate Rivales', 'Vol. T2% Rivales', 'Vol. T3% Rivales', 'Ast% Rivales',
                                     'Pérdidas% Rivales', 'Robos%', 'Four Factors Rivales']
                         # Generamos la gráfica radar comparativa
-                        fig_radar_2 = grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa)
-                        st.plotly_chart(fig_radar_2, use_container_width=True, key = 'radar_2')
+                        fig_radar_3 = grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa)
+                        ruta_radar_3 = guardar_grafica_plotly(fig_radar_3, "radar_comparativo_3.png")
+                        st.plotly_chart(fig_radar_3, use_container_width=True, key = 'radar_2')
 
                     elif len(selected_teams) == 1:
                         # Si hay 1 equipo seleccionado, incluimos lo siguiente en la columna 2
@@ -460,8 +473,9 @@ if 'usuario' in st.session_state:
                         # Escogemos las métricas para el radar
                         est_defensa = ['Def. Rtg', 'Def. Reb%', 'eFG% Rivales', 'TS% Rivales', 'FT Rate Rivales', 'Vol. T2% Rivales', 'Vol. T3% Rivales', 'Ast% Rivales',
                                     'Pérdidas% Rivales', 'Robos%', 'Four Factors Rivales']
-                        fig_radar_2 = grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa)
-                        st.plotly_chart(fig_radar_2, use_container_width=True, key = 'radar_2')
+                        fig_radar_4 = grafica_radar_comparativo(df_selected, df_radar_defensa, teams, metrics = est_defensa)
+                        ruta_radar_4 = guardar_grafica_plotly(fig_radar_4, "radar_comparativo_4.png")
+                        st.plotly_chart(fig_radar_4, use_container_width=True, key = 'radar_2')
                 
                 with col3:
                     if len(selected_teams) == 2:
@@ -472,8 +486,9 @@ if 'usuario' in st.session_state:
                         # Indicamos las métricas a incluir en la gráfica radar    
                         posesiones_rival = ['T2I rival', 'T3I rival', 'Pérdidas rival', 'TLI rival']
                         # Hacemos gráfica donut para el equipo seleccionado de sus datos
-                        fig_donut_4 = grafica_donut_posesiones(df_sql_opp, equipo_right, posesiones_rival, colores = colores_rojos)
-                        st.plotly_chart(fig_donut_4, use_container_width=True, key = 'donut_comparativo_2_defensa')
+                        fig_donut_6 = grafica_donut_posesiones(df_sql_opp, equipo_right, posesiones_rival, colores = colores_rojos)
+                        ruta_donut_6 = guardar_grafica_plotly(fig_donut_6, "donut_equipo_6.png")
+                        st.plotly_chart(fig_donut_6, use_container_width=True, key = 'donut_comparativo_2_defensa')
                 
             # Si es mayor que 0 los equipos seleccionados, generamos pdf y botón de página
             if len(selected_teams) > 0:

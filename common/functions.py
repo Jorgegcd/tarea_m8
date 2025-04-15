@@ -8,6 +8,25 @@ import os
 import uuid
 import streamlit.components.v1 as components
 
+def guardar_grafica_plotly(figura, nombre_archivo, carpeta_destino="temp"):
+    import os
+    from plotly.io import write_image
+
+    # Asegurarse de que existe la carpeta
+    if not os.path.exists(carpeta_destino):
+        os.makedirs(carpeta_destino)
+
+    ruta_salida = os.path.join(carpeta_destino, nombre_archivo)
+
+    # Guardar la figura usando Orca (como PNG)
+    try:
+        write_image(figura, ruta_salida, format='png', width=800, height=600, scale=2, engine = 'orca')
+        print(f"Gráfico guardado: {ruta_salida}")
+        return ruta_salida
+    except Exception as e:
+        print(f"Error al guardar {nombre_archivo}: {e}")
+        return None
+
 # Utilizamos manejo de cache
 @st.cache_data
 # Generamos la función para crear tablas en base al dataframe
@@ -532,11 +551,3 @@ def scatter_eficiencia (df, selected_teams):
 
     # Mostramos la figura
     return fig
-
-def print_window():
-    components.html("""
-        <script>
-            window.print();
-        </script>
-        """, height=0,
-            width=0)

@@ -7,6 +7,10 @@ import math
 import io
 import plotly.io as pio
 from common.functions import grafica_piramide_equipo, grafica_metricas_comparacion, scatter_eficiencia, grafica_donut_posesiones
+import plotly.io as pio
+
+pio.orca.config.executable = "C:/Users/jorge/AppData/Local/Programs/orca/orca.exe"
+pio.orca.config.save()
 
 # Creamos la función para generar el pdf
 def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_sql_opp, tabla_ataque, tabla_defensa, output_filename = None):
@@ -17,13 +21,13 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
             super().__init__(unit='mm', format='A4')
             self.set_auto_page_break(auto=True, margin=20)
             # Obtenemos la ruta de la fuente
-            font_path = os.path.join(os.path.dirname(__file__), "..", "fonts", "DejaVuSans.ttf")
-            if os.path.exists(font_path):
+            font_dir = os.path.join(os.path.dirname(__file__), "..", "fonts")
+            if os.path.exists(font_dir):
                 # Agregamos la fuente DejaVu
-                self.add_font("DejaVu", "", os.path.join(font_path, "DejaVuSans.ttf"), uni=True)
-                self.add_font("DejaVu", "B", os.path.join(font_path, "DejaVuSans-Bold.ttf"), uni=True)
-                self.add_font("DejaVu", "I", os.path.join(font_path, "DejaVuSans-Oblique.ttf"), uni=True)
-                self.add_font("DejaVu", "BI", os.path.join(font_path, "DejaVuSans-BoldOblique.ttf"), uni=True)
+                self.add_font("DejaVu", "", os.path.join(font_dir, "DejaVuSans.ttf"), uni=True)
+                self.add_font("DejaVu", "B", os.path.join(font_dir, "DejaVuSans-Bold.ttf"), uni=True)
+                self.add_font("DejaVu", "I", os.path.join(font_dir, "DejaVuSans-Oblique.ttf"), uni=True)
+                self.add_font("DejaVu", "BI", os.path.join(font_dir, "DejaVuSans-BoldOblique.ttf"), uni=True)
                 self.myfont = "DejaVu"
             else:
                 self.myfont = "Arial"  # Usamos Arial por defecto si la fuente no se encuentra.
@@ -47,7 +51,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
             self.set_x((self.w - self.get_string_width("Tarea Módulo 8:Página 1")) / 2)  # Centramos horizontalmente el título en el encabezado
             self.cell(55,3, "Tarea Módulo 8:Página 1", border=0, align="C")
 
-            # Designamos la fuente que queremos: Arial 8
+            # Designamos la fuente que queremos y tamaño 8
             self.set_text_color(67, 142, 189) # Color de la fuente
             self.set_font(self.myfont, "", 8) # Tipo de fuente
                 
@@ -157,7 +161,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     # Título de la página
     pdf.set_fill_color(255, 255, 255)  # Fondo de texto blanco
     pdf.set_text_color(67, 142, 189)  # Letra de texto Azul para títulos de encabezados
-    pdf.set_font(pdf.myfont, "B", size=14) # Texto en Arial 14 en negrita
+    pdf.set_font(pdf.myfont, "B", size=14) # Texto en tamaño 14 en negrita
     title = page_title # Mostramos el título de la página
     pdf.cell(0, 10, title, 0, 1, 'C')  # Mostramos el texto en el centro
     pdf.ln(5)
@@ -206,7 +210,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
         pdf.ln(35)
 
     pdf.set_text_color(0, 0, 0) # Color de fuente negro para la descripción
-    pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10 en negrita
+    pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
     
     # Mostramos título de sección
     pdf.cell(page_width, 2, 'Promedios por partido equipo', border = str(0), align="C")
@@ -230,7 +234,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     
     # Introducimos la tabla de los rivales
     pdf.set_text_color(0, 0, 0) # Color de fuente negro para la descripción
-    pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10 en negrita
+    pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
     pdf.cell(page_width, 2, 'Promedios por partido de los rivales', border = str(0), align="C")
     pdf.ln(8)
     col_width_opp = page_width / len(headers)
@@ -238,16 +242,24 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf.ln(10)
 
     pdf.set_text_color(0, 0, 0) # Color de fuente negro para la descripción
-    pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10
+    pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10
     pdf.cell(page_width/2, 2, 'Comparación promedios ataque', border = str(0), align="C")
     pdf.cell(page_width/2, 2, 'Comparación promedios defensa', border = str(0), align="C")
-    
-    # RELLENAMOS AQUÍ CON LOS GRÁFICOS
+    pdf.ln(8)
+    if os.path.exists("temp/piramide_ataque_1.png"):
+        pdf.image("temp/piramide_ataque_1.png", x=10, y=pdf.get_y(), w=90)
+    else:
+        pdf.image("temp/piramide_ataque_3.png", x=10, y=pdf.get_y(), w=90)
+
+    if os.path.exists("temp/piramide_ataque_2.png"):
+        pdf.image("temp/piramide_ataque_2.png", x=110, y=pdf.get_y(), w=90)
+    else:
+        pdf.image("temp/piramide_ataque_4.png", x=110, y=pdf.get_y(), w=90)
 
     pdf.ln(90)
     
     pdf.ln(10)
-    pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10 en negrita
+    pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
     pdf.cell(page_width, 2, 'Estadísticas avanzadas ataque', border = str(0), align="C")
     pdf.ln(8)
 
@@ -255,7 +267,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     headers_adv_of = ['Equipo', 'P', 'Pace', 'Of.\nRtg','eFG%','TS%', 'PPT2', 'Vol.\nT2%', 'PPT3', 'Vol\nT3%', 'PPTL', 'FTR', 'RO%', 'Ast%', 'Rob%',
                       'TO%', 'Tap%', 'Four\nFact']
     headers_adv_def = ['Equipo', 'P', 'Pace', 'Def\nRtg','DR%', 'RT%', 'eFG%\nRiv','TS%\nRiv', 'PPT2\nRiv', 'Vol.\nT2%\nRiv', 'PPT3\nRiv', 'Vol\nT3%\nRiv',
-                       'PPTL\nRiv', 'FTR\nRiv', 'Ast%\nRiv', 'Rob%\nRiv', 'TO%\nRiv', 'Tap%\nRiv', 'Four\nFact\nRiv']
+                       'PPTL\nRiv', 'FTR\nRiv', 'Ast%\nRiv', 'Rob%\nRiv', 'TO%\nRiv', 'Tap%\nRiv', '4F\nRiv']
     data_adv_of = tabla_ataque.values.tolist()
     data_adv_def = tabla_defensa.values.tolist()
     
@@ -264,7 +276,7 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     pdf.create_table(headers_adv_of, data_adv_of, col_width=col_width_adv_of)
     pdf.ln(10)
 
-    pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10 en negrita
+    pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
     
     # Introducimos la tabla de estadísticas avanzadas de defensa
     pdf.cell(page_width, 2, 'Estadísticas avanzadas defensa', border = str(0), align="C")
@@ -272,42 +284,68 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
     col_width_adv_def = page_width / len(headers_adv_def)
     pdf.create_table(headers_adv_def, data_adv_def, col_width=col_width_adv_def)
     pdf.ln(10)
-    
-    # RELLENAMOS AQUÍ CON LOS GRÁFICOS
 
-    pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10 en negrita
+    pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
     pdf.cell(page_width, 2, 'Eficiencia ofensiva vs eficiencia defensiva', border = str(0), align="C")
-    pdf.ln(8)
+    pdf.ln(5)
     
-    # RELLENAMOS AQUÍ CON LOS GRÁFICOS
+    page_width = pdf.w - 2 * pdf.l_margin
 
-    pdf.ln(10)
+    if os.path.exists("temp/scatter_eficiencia.png"):
+        pdf.image("temp/scatter_eficiencia.png", x=30, y=pdf.get_y(), w=160)
+
+    pdf.ln(160)
     
     # Ubicación de los gráficos de donut
-    page_width = pdf.w - 2 * pdf.l_margin
-    pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10 en negrita
+    pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
     pdf.cell(page_width/2, 2, f'Distribución posesiones {selected_teams[0]}', border = str(0), align="C")
-    pdf.cell(page_width/2, 2, f'Distribución posesiones {selected_teams[1]}', border = str(0), align="C")
+    if len(selected_teams) > 1:
+        pdf.cell(page_width/2, 2, f'Distribución posesiones {selected_teams[1]}', border = str(0), align="C")
+    else:
+        pdf.cell(page_width/2, 2, f'Distribución posesiones rivales{selected_teams[0]}', border = str(0), align="C")
+    
     pdf.ln(8)
 
-    # RELLENAMOS AQUÍ CON LOS GRÁFICOS
+    if os.path.exists("temp/donut_equipo_1.png"):
+        pdf.image("temp/donut_equipo_1.png", x=10, y=pdf.get_y(), w=90)
+    else:
+        pdf.image("temp/donut_equipo_2.png", x=10, y=pdf.get_y(), w=90)
 
-    pdf.ln(60)
-    pdf.ln(10)
+    if os.path.exists("temp/donut_equipo_3.png"):
+        pdf.image("temp/donut_equipo_3.png", x=110, y=pdf.get_y(), w=90)
+    else:
+        pdf.image("temp/donut_equipo_4.png", x=110, y=pdf.get_y(), w=90)
 
-    pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10 en negrita
+    pdf.ln(75)
+ 
+    pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
     pdf.cell(page_width/2, 2, 'Comparación est. avanzadas ataque', border = str(0), align="C")
     pdf.cell(page_width/2, 2, 'Comparación est. avanzadas defensa', border = str(0), align="C")
     pdf.ln(10)
 
-    # RELLENAMOS AQUÍ CON LOS GRÁFICOS
+    if os.path.exists("temp/radar_comparativo_1.png"):
+        pdf.image("temp/radar_comparativo_1.png", x=10, y=pdf.get_y(), w=90)
+    else:
+        pdf.image("temp/radar_comparativo_2.png", x=10, y=pdf.get_y(), w=90)
 
-    pdf.set_font("Arial", 'B', size=10) # Letra de texto arial 10 en negrita
-    pdf.cell(page_width/2, 2, f'Distribución posesiones rivales {selected_teams[0]}', border = str(0), align="C")
-    pdf.cell(page_width/2, 2, f'Distribución posesiones rivales {selected_teams[1]}', border = str(0), align="C")
+    if os.path.exists("temp/radar_comparativo_3.png"):
+        pdf.image("temp/radar_comparativo_3.png", x=110, y=pdf.get_y(), w=90)
+    else:
+        pdf.image("temp/radar_comparativo_4.png", x=110, y=pdf.get_y(), w=90)
+    
+    pdf.ln(75)
+
+    pdf.set_font(pdf.myfont, 'B', size=10) # Letra de texto tamaño 10 en negrita
+    if len(selected_teams) > 1:
+        pdf.cell(page_width/2, 2, f'Dist. posesiones rivales {selected_teams[0]}', border = str(0), align="C")
+        pdf.cell(page_width/2, 2, f'Dist. posesiones rivales {selected_teams[1]}', border = str(0), align="C")
+        pdf.ln(8)
+
+    if len(selected_teams) > 1:
+        pdf.image("temp/donut_equipo_5.png", x=10, y=pdf.get_y(), w=90)
+        pdf.image("temp/donut_equipo_6.png", x=110, y=pdf.get_y(), w=90)
+
     pdf.ln(10)
-
-    # RELLENAMOS AQUÍ CON LOS GRÁFICOS
 
     pdf.output(output_filename)
 

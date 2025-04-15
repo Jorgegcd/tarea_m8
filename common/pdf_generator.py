@@ -19,9 +19,11 @@ def generate_pdf_pag1(page_title, selected_teams, df_temporada, df_sql_team, df_
             # Obtenemos la ruta de la fuente
             font_path = os.path.join(os.path.dirname(__file__), "..", "fonts", "DejaVuSans.ttf")
             if os.path.exists(font_path):
-                # Agregamos la fuente
-                self.add_font("DejaVu", "", font_path, uni=True)
-                self.add_font("DejaVu", "B", font_path, uni=True)
+                # Agregamos la fuente DejaVu
+                self.add_font("DejaVu", "", os.path.join(font_path, "DejaVuSans.ttf"), uni=True)
+                self.add_font("DejaVu", "B", os.path.join(font_path, "DejaVuSans-Bold.ttf"), uni=True)
+                self.add_font("DejaVu", "I", os.path.join(font_path, "DejaVuSans-Oblique.ttf"), uni=True)
+                self.add_font("DejaVu", "BI", os.path.join(font_path, "DejaVuSans-BoldOblique.ttf"), uni=True)
                 self.myfont = "DejaVu"
             else:
                 self.myfont = "Arial"  # Usamos Arial por defecto si la fuente no se encuentra.

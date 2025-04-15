@@ -13,8 +13,7 @@ logo_image = Image.open(logo_path)
 
 st.set_page_config(page_title="Inicio", page_icon=logo_image) # Cambiamos nombre de la página e introducimos el logo de la liga en el explorador
 
-# Introducimos título centrado
-st.markdown(f"<h1 style='text-align: center;'>Comparador de equipos ABA League 2</h1>", unsafe_allow_html=True)
+
 
 # Introducimos la función generar login
 login.generarLogin()

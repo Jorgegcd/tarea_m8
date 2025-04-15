@@ -3,6 +3,7 @@ import common.menu as menu
 import pandas as pd
 import os
 from common.functions_pag2 import caja_metricas, calcular_metricas, grafica_evolucion_resultados, calcular_percentiles, radar_comparativo
+from common.functions import guardar_grafica_plotly
 from common.pdf_generator_pag2 import generate_pdf_pag2
 import common.login as login
 from sqlalchemy import create_engine
@@ -470,7 +471,38 @@ if 'usuario' in st.session_state:
 
                         tablas[team] = df_metrics
                     
-                    # VER SI BIEN HECHO Y SACAR LOS VALORES DE LAS TABLAS COMO data_team_1 y data_team_2
+                    if len(selected_teams) >= 1:
+                        data_team_1 = tablas[selected_teams[0]].values.tolist()
+
+                    if len(selected_teams) == 2:
+                        data_team_2 = tablas[selected_teams[1]].values.tolist()
+                    else:
+                        data_team_2 = None
+
+                    # Tablas para PDF con métricas por equipo
+                    tabla_cajas_team_1 = [
+                        ["Métrica", "Valor"],
+                        ["Eficiencia Ofensiva (Total Liga)", f"{equipos_data[selected_teams[0]]['ortg_tot']:.2f}"],
+                        ["Eficiencia Ofensiva (Jornadas)", f"{equipos_data[selected_teams[0]]['ortg_jornada']:.2f}"],
+                        ["Eficiencia Defensiva (Total Liga)", f"{equipos_data[selected_teams[0]]['drtg_tot']:.2f}"],
+                        ["Eficiencia Defensiva (Jornadas)", f"{equipos_data[selected_teams[0]]['drtg_jornada']:.2f}"],
+                        ["Partidos (Totales)", f"{equipos_data[selected_teams[0]]['partidos_tot']}"],
+                        ["Partidos (Victorias/Derrotas)", f"{equipos_data[selected_teams[0]]['partidos']} ({equipos_data[selected_teams[0]]['victorias']}/{equipos_data[selected_teams[0]]['derrotas']})"]
+                    ]
+
+                    tabla_cajas_team_2 = None
+                    if len(selected_teams) == 2:
+                        tabla_cajas_team_2 = [
+                            ["Métrica", "Valor"],
+                            ["Eficiencia Ofensiva (Total Liga)", f"{equipos_data[selected_teams[1]]['ortg_tot']:.2f}"],
+                            ["Eficiencia Ofensiva (Jornadas)", f"{equipos_data[selected_teams[1]]['ortg_jornada']:.2f}"],
+                            ["Eficiencia Defensiva (Total Liga)", f"{equipos_data[selected_teams[1]]['drtg_tot']:.2f}"],
+                            ["Eficiencia Defensiva (Jornadas)", f"{equipos_data[selected_teams[1]]['drtg_jornada']:.2f}"],
+                            ["Partidos (Totales)", f"{equipos_data[selected_teams[1]]['partidos_tot']}"],
+                            ["Partidos (Victorias/Derrotas)", f"{equipos_data[selected_teams[1]]['partidos']} ({equipos_data[selected_teams[1]]['victorias']}/{equipos_data[selected_teams[1]]['derrotas']})"]
+                        ]
+ 
                     
                     pdf = generate_pdf_pag2 (page_title = 'Comparador por jornadas y totales de equipos ABA League 2', selected_teams = selected_teams,
-                                              season = temporada_seleccionada, df_temporada = df_temporada, data_team_1 = data_team_1, data_team_2 = data_team_2)
+                                              season = temporada_seleccionada, df_temporada = df_temporada, data_team_1 = data_team_1, data_team_2 = data_team_2,
+                                              tabla_cajas_team_1=tabla_cajas_team_1, tabla_cajas_team_2=tabla_cajas_team_2)

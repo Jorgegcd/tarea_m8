@@ -2,9 +2,14 @@ from fpdf import FPDF
 import os
 import pandas as pd
 import textwrap
+import plotly.io as pio
+
+pio.orca.config.executable = "C:/Users/jorge/AppData/Local/Programs/orca/orca.exe"
+pio.orca.config.save()
 
 # Creamos la función para generar el pdf
-def generate_pdf_pag2(page_title, selected_teams, season, df_temporada, data_team_1, fig_total_path = None, fig_jornadas_path= None, tablas = None, data_team_2 = None):
+def generate_pdf_pag2(page_title, selected_teams, season, df_temporada, data_team_1, tabla_cajas_team_1, fig_total_path = None,
+                      tabla_cajas_team_2 = None, fig_jornadas_path= None, tablas = None, data_team_2 = None):
     
     # Generamos el PDF vertical
     class PDF(FPDF):
@@ -73,8 +78,9 @@ def generate_pdf_pag2(page_title, selected_teams, season, df_temporada, data_tea
             
             n = len(headers)
             # Calculamos la base del ancho de modo que sea ancho_total = 1.5 * base + (n - 1) * base = base*(n + 0.5)
-            base_width = (self.w - 2 * self.l_margin) / (n + 0.5)
-            widths = [2 * base_width] + [base_width] * (n - 1)
+            table_width = (self.w - 2 * self.l_margin)
+            col_width = table_width / len(headers)
+            widths = [col_width] * len(headers)
             
             # Los encabezados son con la fuente seleccionada, en negrita y tamaño 7
             self.set_font(self.myfont, 'B', 7)
@@ -209,8 +215,6 @@ def generate_pdf_pag2(page_title, selected_teams, season, df_temporada, data_tea
     pdf.cell(page_width/2, 2, f'Valores generales liga {selected_teams[1]}', border = str(0), align="C")
     pdf.ln(8)
 
-    # METER FUNCIÓN DE CAJAS DE MÉTRICAS TOTALES LIGA (CAMBIAR ANCHOS Y TAMAÑOS, METER UN IF > 1)
-
     pdf.ln(10)
 
     pdf.cell(page_width/2, 2, f'Valores jornadas seleccionadas {selected_teams[0]}', border = str(0), align="C")
@@ -235,7 +239,7 @@ def generate_pdf_pag2(page_title, selected_teams, season, df_temporada, data_tea
     col_width_adv_of = page_width / len(headers_globales)
     # Creamos la tabla
     pdf.create_table(headers_globales, data_team_1, col_width=col_width_adv_of)
-    pdf.ln(10)
+    pdf.ln(40)
     
     if len (selected_teams) > 1:
         pdf.set_text_color(0, 0, 0) # Color de fuente negro para la descripción

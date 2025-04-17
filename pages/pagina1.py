@@ -27,8 +27,8 @@ login.generarLogin()
 # Indicamos lo que ocurre si usuario es correcto
 if 'usuario' in st.session_state:
 
-    # Creamos el engine de conexión a la base de datos MySQL
-    engine = create_engine("mysql+pymysql://jgcornejo:Avellanas9?@localhost:3306/tarea_m8", echo=True)
+    # Creamos el engine de conexión a la base de datos
+    engine = create_engine("sqlite:///data/tarea_m8.db", echo=True)
 
     # Indicamos título de página
     st.markdown(f"<h1 style='text-align: center;'>Comparador de totales de equipos ABA League 2</h1>", unsafe_allow_html=True)
@@ -124,29 +124,29 @@ if 'usuario' in st.session_state:
                     # Generamos el pdf según la base de datos que tenemos para los promedios por partido de los equipos
                     query = f"""
                     SELECT 
-                        t.team_name AS "Equipo",
-                        t.team_id AS "team_id",
-                        COUNT(m.match) AS "Partidos",
-                        AVG(m.pts) AS "Puntos",
-                        AVG(m.fg2m) AS "T2A",
-                        AVG(m.fg2a) AS "T2I",
-                        100*(AVG(m.fg2m) / AVG(m.fg2a)) AS "T2 Porc",
-                        AVG(m.fg3m) AS "T3A",
-                        AVG(m.fg3a) AS "T3I",
-                        100*(AVG(m.fg3m) / AVG(m.fg3a)) AS "T3 Porc",
-                        AVG(m.fgm) AS "TCA",
-                        AVG(m.fga) AS "TCI",
-                        100*(AVG(m.fgm) / AVG(m.fga)) AS "TC Porc",
-                        AVG(m.ftm) AS "TLA",
-                        AVG(m.fta) AS "TLI",
-                        100*(AVG(m.ftm) / AVG(m.fta)) AS "TL Porc",
-                        AVG(m.or) AS "Reb of",
-                        AVG(m.dr) AS "Reb def",
-                        AVG(m.tr) AS "Reb tot",
-                        AVG(m.ass) AS "Ast",
-                        AVG(m.st) AS "Robos",
-                        AVG(m.blk) AS "Tapones",
-                        AVG(m.to) AS "Pérdidas"
+                        t.team_name AS 'Equipo',
+                        t.team_id AS 'team_id',
+                        COUNT(m.match) AS 'Partidos',
+                        AVG(m.pts) AS 'Puntos',
+                        AVG(m.fg2m) AS 'T2A',
+                        AVG(m.fg2a) AS 'T2I',
+                        100*(AVG(m.fg2m) / AVG(m.fg2a)) AS 'T2 Porc',
+                        AVG(m.fg3m) AS 'T3A',
+                        AVG(m.fg3a) AS 'T3I',
+                        100*(AVG(m.fg3m) / AVG(m.fg3a)) AS 'T3 Porc',
+                        AVG(m.fgm) AS 'TCA',
+                        AVG(m.fga) AS 'TCI',
+                        100*(AVG(m.fgm) / AVG(m.fga)) AS 'TC Porc',
+                        AVG(m.ftm) AS 'TLA',
+                        AVG(m.fta) AS 'TLI',
+                        100*(AVG(m.ftm) / AVG(m.fta)) AS 'TL Porc',
+                        AVG(m."or") AS 'Reb of',
+                        AVG(m.dr) AS 'Reb def',
+                        AVG(m.tr) AS 'Reb tot',
+                        AVG(m.ass) AS 'Ast',
+                        AVG(m.st) AS 'Robos',
+                        AVG(m.blk) AS 'Tapones',
+                        AVG(m."to") AS 'Pérdidas'
                     FROM matches m
                     JOIN teams t ON m.team_id = t.team_id
                     WHERE t.team_name IN ({equipos_str}) AND m.season = '{temporada_seleccionada}'
@@ -170,29 +170,29 @@ if 'usuario' in st.session_state:
                     # Generamos el pdf según la base de datos que tenemos para los promedios por partido de los rivales
                     query = f"""
                     SELECT 
-                        t.team_name AS "Equipo",
-                        t.team_id AS "team_id",
-                        COUNT(m.match) AS "Partidos",
-                        AVG(m.pts_opp) AS "Puntos recibidos",
-                        AVG(m.fg2m_opp) AS "T2A rival",
-                        AVG(m.fga_opp) AS "T2I rival",
-                        100*(AVG(m.fg2m_opp) / AVG(m.fg2a_opp)) AS "T2 Porc rival",
-                        AVG(m.fg3m_opp) AS "T3A rival",
-                        AVG(m.fg3a_opp) AS "T3I rival",
-                        100*(AVG(m.fg3m_opp) / AVG(m.fg3a_opp)) AS "T3 Porc rival",
-                        AVG(m.fgm_opp) AS "TCA rival",
-                        AVG(m.fga_opp) AS "TCI rival",
-                        100*(AVG(m.fgm_opp) / AVG(m.fga_opp)) AS "TC Porc rival",
-                        AVG(m.ftm_opp) AS "TLA rival",
-                        AVG(m.fta_opp) AS "TLI rival",
-                        100*(AVG(m.ftm_opp) / AVG(m.fta_opp)) AS "TL Porc rival",
-                        AVG(m.or_opp) AS "Reb of rival",
-                        AVG(m.dr_opp) AS "Reb def rival",
-                        AVG(m.tr_opp) AS "Reb tot rival",
-                        AVG(m.ass_opp) AS "Ast rival",
-                        AVG(m.st_opp) AS "Robos rival",
-                        AVG(m.blk_opp) AS "Tapones rival",
-                        AVG(m.to_opp) AS "Pérdidas rival"
+                        t.team_name AS 'Equipo',
+                        t.team_id AS 'team_id',
+                        COUNT(m.match) AS 'Partidos',
+                        AVG(m.pts_opp) AS 'Puntos recibidos',
+                        AVG(m.fg2m_opp) AS 'T2A rival',
+                        AVG(m.fga_opp) AS 'T2I rival',
+                        100*(AVG(m.fg2m_opp) / AVG(m.fg2a_opp)) AS 'T2 Porc rival',
+                        AVG(m.fg3m_opp) AS 'T3A rival',
+                        AVG(m.fg3a_opp) AS 'T3I rival',
+                        100*(AVG(m.fg3m_opp) / AVG(m.fg3a_opp)) AS 'T3 Porc rival',
+                        AVG(m.fgm_opp) AS 'TCA rival',
+                        AVG(m.fga_opp) AS 'TCI rival',
+                        100*(AVG(m.fgm_opp) / AVG(m.fga_opp)) AS 'TC Porc rival',
+                        AVG(m.ftm_opp) AS 'TLA rival',
+                        AVG(m.fta_opp) AS 'TLI rival',
+                        100*(AVG(m.ftm_opp) / AVG(m.fta_opp)) AS 'TL Porc rival',
+                        AVG(m.or_opp) AS 'Reb of rival',
+                        AVG(m.dr_opp) AS 'Reb def rival',
+                        AVG(m.tr_opp) AS 'Reb tot rival',
+                        AVG(m.ass_opp) AS 'Ast rival',
+                        AVG(m.st_opp) AS 'Robos rival',
+                        AVG(m.blk_opp) AS 'Tapones rival',
+                        AVG(m.to_opp) AS 'Pérdidas rival'
                     FROM matches m
                     JOIN teams t ON m.team_id = t.team_id
                     WHERE t.team_name IN ({equipos_str}) AND m.season = '{temporada_seleccionada}'

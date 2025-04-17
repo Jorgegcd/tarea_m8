@@ -29,7 +29,7 @@ login.generarLogin()
 if 'usuario' in st.session_state:
 
     # Crea el engine de conexión a la base de datos MySQL
-    engine = create_engine("mysql+pymysql://jgcornejo:Avellanas9?@localhost:3306/tarea_m8", echo=True)
+    engine = create_engine("sqlite:///data/tarea_m8.db", echo=True)
 
     # Leer la tabla desde MySQL
     df_jornadas = pd.read_sql("SELECT * FROM matches", engine)
